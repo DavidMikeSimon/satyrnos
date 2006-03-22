@@ -93,6 +93,8 @@ def disp_deinit():
 	You don't have to call this, it's enough to just let the program end.
 	It might be handy if you want to close the window and open it again later, though.
 	"""
+
+	resman.unload_all()
 	
 	global screen, clock, cons, winwidth, winheight, pixm
 	pygame.quit()
@@ -104,7 +106,7 @@ def disp_deinit():
 	pixm = None
 	sys.stderr = sys.__stderr__
 	sys.stdin = sys.__stdin__
-	resman.unload_all()
+
 
 def sim_deinit():
 	"""Deinitializes the camera and simulation, including ODE.

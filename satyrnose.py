@@ -18,7 +18,7 @@ minx1, miny1, minx2, miny2 = 9999, 9999, 9999, 9999
 
 app.disp_init()
 
-runs = 5
+runs = 1
 for i in range(runs):
 	app.sim_init()
 	
@@ -33,7 +33,7 @@ for i in range(runs):
 	#app.objects.append(gameobj.OBlock(colors.black, (2, 1.5), (1.5, 0.2), geom=util.box_geom((1.5, 0.2))))
 	
 	#ballrad = (app.objects[0].img.get_width()-5)/(2.0*app.pixm)
-		
+	
 	app.objects[0].body = util.sphere_body(1, 0.375)
 	app.objects[0].geom = util.sphere_geom(0.375)
 	app.objects[0].pos = (0.9, 0.9)
@@ -48,11 +48,11 @@ for i in range(runs):
 	#app.objects[4].controllers.append(controller.CBoxMagnet(-0.2, (3.8, 0.1)))
 	#app.objects[3].controllers.append(controller.CBoxMagnet(-0.03, (0.1, 2.8)))
 	app.objects[0].controllers.append(controller.CCameraFollow())
-
+        
 	app.objects[0].body.addForce((150, 150, 0))
 	
 	#profile.run('app.run()', 'satyrprof')
-	app.run(300)
+	app.run()
 	
 	x1 = app.objects[0].pos[0]
 	y1 = app.objects[0].pos[1]
@@ -75,7 +75,7 @@ for i in range(runs):
 	avgy1 += y1
 	avgx2 += x2
 	avgy2 += y2
-	
+
 	app.sim_deinit()
 
 avgx1 /= runs
