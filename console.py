@@ -7,8 +7,8 @@ import app
 import colors
 import consenv
 
-helphelp = "Interactive Python help is not available in Satyrnose. You can still use help(object)."
-quithelp = "To close the debugging console, hold down shift and type ~ (a tilde)."
+helphelp = "Interactive Python help is not available in Satyrnose. You can still use help(class) or help(module)."
+quithelp = "To close the debugging console, hit the escape key."
 
 class PseudoOut:
 	"""A substitue stderr/stdout that appends to an OutputBox and also forwards to the real stderr."""
@@ -36,7 +36,7 @@ class EditBox:
 	"""
 	
 	#All the characters that we can accept when typed
-	inpat = sre.compile(r"[-0-9A-Za-z!@#$%^&*\(\)_+=\\|{}\[\]:;'<,>.?/` \"']")
+	inpat = sre.compile(r"[-~0-9A-Za-z!@#$%^&*\(\)_+=\\|{}\[\]:;'<,>.?/` \"']")
 
 	def __init__(self, rect = None):
 		"""Creates an EditBox."""
@@ -260,21 +260,20 @@ class Console:
 		if event.type != KEYDOWN:
 			return
 		
-		if event.unicode == "~":
-			if self.active == 1:
-				self.active = 0
-				pygame.key.set_repeat()
-			else:
-				self.active = 1
-				pygame.key.set_repeat(400, 30)
-				return
+		if event.unicode == "~" and self.active == 0:
+			self.active = 1
+			pygame.key.set_repeat(400, 30)
+			return
 		
 		if not self.active:
 			return
-		
+
 		self.edit.handle(event)
 
-		if event.key == K_UP:
+		if event.key == K_ESCAPE:
+			self.active = 0
+			pygame.key.set_repeat()
+		elif event.key == K_UP:
 			#Browse backwards in history
 			if self.histpos > 0 and len(self.hist) > 0:
 				self.histpos -= 1
