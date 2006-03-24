@@ -33,7 +33,7 @@ Long term features:
 
 Design notes:
 - Associate Controllers with Drawers in same GameObj by keeping Drawers in a TrackerList
-- Don't have Controllers in one GameObj call Controllers in another (cause then two refs needed to check)
+- Don't have Controllers in one GameObj keep refs to other Controllers; refs to GameObjs instead
 
 ----
 Theoretical Controller Configuration:
@@ -65,8 +65,8 @@ Hold C, Release (+ optional direction): Charged sword attack
 Hold C, Push B: Cancel sword charge
 
 Interaction:
-A (+ optional direction, defaults to nearest interactable object): Grab/activate
-A while holding object (and no interactable objects near): Drop object
+A (+ optional direction, defaults to nearest interactable object): Grab
+A while holding object (and no interactable objects near): Drop object (release with very mild force)
 Hold A while holding object, release A (+ optional direction, defaults to facing direction): Throw held object
 
 Magnets and Gravity:
