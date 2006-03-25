@@ -45,7 +45,7 @@ for i in range(runs):
 	#app.objects[0].body.addForce((5, 0, 0))
 	#app.objects[5].controllers.append(controller.CMagnet(-0.3))
 	#app.objects[5].controllers.append(controller.CBoxMagnet(-0.2, (1.5, 0.2)))
-	#app.objects[4].controllers.append(controller.CBoxMagnet(-0.2, (3.8, 0.1)))
+	app.objects[4].controllers.append(controller.CBoxMagnet(-0.2, (5, 0.1)))
 	#app.objects[3].controllers.append(controller.CBoxMagnet(-0.03, (0.1, 2.8)))
 	app.objects[0].controllers.append(controller.CCameraFollow())
         

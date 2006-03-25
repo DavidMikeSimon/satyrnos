@@ -54,19 +54,19 @@ Hold D: Prepare for jump (if release as hit the ground, quickly hops off again)
 Stick: Slow drift (only available to the degree that you've already got velocity, and it lowers total velocity)
 
 Pulsing:
-Tap B: Pulse to check motion (if already still, just a waste of energy)
+Tap B: Pulse to stop motion (if already still, just a waste of energy)
 Tap B + Direction: Pulse
 Hold B, Release B (+ optional direction): Charged pulse
-Hold B, Push C: Cancel pulse charge
+Hold B, Push A: Cancel pulse charge
 
 Sword:
 Tap C (+ optional direction, defaults to facing/vel direction): Sword attack
 Hold C, Release (+ optional direction): Charged sword attack
-Hold C, Push B: Cancel sword charge
+Hold C, Push A: Cancel sword charge
 
 Interaction:
 A (+ optional direction, defaults to nearest interactable object): Grab
-A while holding object (and no interactable objects near): Drop object (release with very mild force)
+A while holding object: Drop object (release with no force)
 Hold A while holding object, release A (+ optional direction, defaults to facing direction): Throw held object
 
 Magnets and Gravity:
