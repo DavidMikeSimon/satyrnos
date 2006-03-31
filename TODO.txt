@@ -2,16 +2,13 @@ Bugs:
 - Friction should decrease velocity
 - Fuzzy GLUT text in Windows
 - GameObj._setBody needs to destroy old body
-- Magnets also move magnet towards pulled object
-- Does CBoxMag rotation work?
 
 Short term features:
-- TrackerList
+- Magnets also move magnet towards pulled object
+- Antialiasing
 - Options dialog, saving options
 - Changing resolution/fullscreen state (Windows and Linux)
 - Collide2 (and maybe contact groups) to decrease spurious collisions
-- CLineMag
-- Object and controller specialized sequence derivatives
 - Level loading
 - Control mapping
 - Gamepad support
@@ -21,6 +18,7 @@ Short term features:
 - Unit tests for modules
 - One GameObj, many Drawer types
 - For checking draw clipping, use Drawers
+- Automatic unwedgie-ing (powerful magnets can cause persistent overlap)
 - Derive body/geom (scaling, 2d, angle conversion)
 
 Long term features:

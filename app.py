@@ -3,7 +3,7 @@ from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
-import colors, console, resman
+import colors, console, resman, util
 
 #The size of the display window in pixels
 winwidth = None
@@ -83,7 +83,7 @@ def sim_init():
 	odeworld.setQuickStepNumIterations(10)
 	odeworld.setERP(0.0) #Setting this to zero stops annoying shaking, can still set joint ERPs
 	odespace = ode.HashSpace()
-	objects = []
+	objects = util.TrackerList()
 	camera = (2, 1.5)
 
 

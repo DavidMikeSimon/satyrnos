@@ -22,12 +22,16 @@ def tupm(tuple, val):
 	
 	return (tuple[0]*val, tuple[1]*val)
 
+def tupa(a, b):
+	"""Given a couple 2-tuples, returns (a[0]+b[0], a[1]+b[1])."""
+
+	return (a[0]+b[0], a[1]+b[1])
+
 def rotp(pt, cen, ang):
-	"""Rotates a point around a center-point a given number of cw revolutions.
+	"""Rotates a point around a center-point a given number of cw revolutions."""
 
-	This is for rotating for purposes of display; it's y-flipped compared to mathematical standards.
-	"""
-
+	if ang < 0.00001:
+		return pt
 	a = rev2rad(ang)
 	h = dist(cen, pt) #Radius of circle
 	b = math.atan2(pt[1]-cen[1], pt[0]-cen[0]) #Previous angle between the two
@@ -82,31 +86,144 @@ def nearest_on_line(a, b, p):
 	u = min(max(0.0, u), 1.0)
 	return (a[0] + u*(b[0]-a[0]), a[1] + u*(b[1]-a[1]))
 
-def mag_force(source, target, tgtmass, pow, loss = 0, grav = False):
-	"""Returns a 3-tuple, appropriate for passing to body.addForce(), for a magnetic/gravitational force.
+
+class TrackerList(list):
+	"""Behaves exactly like a list, except that the 'in' operator, count, and __contains__ are
+	more efficient, and compare by id(), rather than by equality."""
 	
-	Force is emanating from source, affecting target. Both are passed as 2-tuples.
-	Pow is the amount of force applied. Negative for pulling, positive for pushing.
-	Loss is the amount of force lost per meter distance from the object (brings pow closer to zero).
-	If grav is true, then mass of object is ignored; it acts as though objects have a mass of 1.
-	"""
+	def _decrid(self, i, n = 1):
+		#Decrease the idcount for the given id by n
+		if (self._idcounts[i] > n):
+			self._idcounts[i] -= n
+		else:
+			del self._idcounts[i]
+
+	def _incrid(self, i, n = 1):
+		#Increase the idcount for the given id by n
+		if self._idcounts.has_key(i):
+			self._idcounts[i] += n
+		else:
+			self._idcounts[i] = n
 	
-	#If we have loss, determine the actual amount of force applied
-	force = pow
-	d = dist(source, target)
-	if loss != 0:
-		diff = d*loss
-		if pow > 0:
-			diff = -diff
-		force += diff
-		#If the loss is so powerful that we change from pushing to pulling or vice versa, then cancel
-		if (force > 0) != (pow > 0):
-			return ((0, 0, 0))
+	def __add__(self, y):
+		r = self[:]
+		list.__iadd__(r, y)
+		r._idcounts = self._idcounts.copy()
+		if isinstance(y, TrackerList):
+			for k in y._idcounts.keys():
+				r._incrid(k, y._idcounts[k])
+		else:
+			for v in y:
+				r._incrid(id(v))
+		return r
+
+	def __contains__(self, y):
+		return self.count(y) > 0
 	
-	#If we're a gravity-like force (mass of object disregarded), adjust applied force to compensate
-	if grav:
-		force *= tgtmass
-			
-	#Calculate and return the force
-	ang = math.atan2(target[1]-source[1], target[0]-source[0])
-	return ((force*math.cos(ang), force*math.sin(ang), 0))
+	def __delitem__(self, y):
+		if not isinstance(y, slice):
+			self._decrid(id(self[y]))
+		else:
+			for e in list.__getitem__(self, y):
+				self._decrid(id(e))
+		list.__delitem__(self, y)
+	
+	def __delslice__(self, i, j):
+		self.__delitem__(slice(i, j))
+	
+	def __getitem__(self, i):
+		if not isinstance(i, slice):
+			return list.__getitem__(self, i)
+		else:
+			return TrackerList(list.__getitem__(self, i))
+
+	def __getslice__(self, i, j):
+		return self.__getitem__(slice(i, j))
+		return TrackerList(list.__getslice__(self, i, j))
+	
+	def __iadd__(self, y):
+		list.__iadd__(self, y)
+		if (isinstance(y, TrackerList)):
+			for k in y._idcounts.keys():
+				self._incrid(k, y._idcounts[k])
+		else:
+			for v in y:
+				self._incrid(id(v))
+		return self
+	
+	def __imul__(self, y):
+		list.__imul__(self, y)
+		for k in self._idcounts.keys():
+			self._idcounts[k] *= y
+		return self
+	
+	def __mul__(self, y):
+		r = self[:]
+		list.__imul__(r, y)
+		for k in self._idcounts.keys():
+			r._idcounts[k] *= y
+		return r
+	
+	def __setitem__(self, i, y):
+		if not isinstance(i, slice):
+			self._decrid(id(self[i]))
+			list.__setitem__(self, i, y)
+			self._incrid(id(self[i]))
+		else:
+			for e in list.__getitem__(self, i):
+				self._decrid(id(e))
+			list.__setitem__(self, i, y)
+			for e in y:
+				self._incrid(id(e))
+	
+	def __setslice__(self, i, j, v):
+		self.__setitem__(slice(i, j), v)
+	
+	def __init__(self, seq = None):
+		"""Creates a new TrackerList. If seq is provided, creates a new TrackerList with seq's items."""
+		self._idcounts = {} #Key is some id, value is # of list elements in self with a value having that id
+		if (seq == None):
+			list.__init__(self)
+		else:
+			list.__init__(self, seq)
+			if (isinstance(seq, TrackerList)):
+				self._idcounts = seq._idcounts.copy()
+			else:
+				for v in seq:
+					self._incrid(id(v))
+	
+	def append(self, o):
+		list.append(self, o)
+		self._incrid(id(o))
+	
+	def count(self, val):
+		if self._idcounts.has_key(id(val)):
+			return self._idcounts[id(val)]
+		else:
+			return 0
+	
+	def extend(self, iterable):
+		list.extend(self, iterable)
+		if (isinstance(iterable, TrackerList)):
+			for k in iterable._idcounts.keys():
+				self._incrid(k, iterable._idcounts[k])
+		else:
+			for v in iterable:
+				self._incrid(id(v))
+
+	def insert(self, idx, o):
+		list.insert(self, idx, o)
+		self._incrid(id(o))
+	
+	def pop(self, idx = None):
+		if idx == None:
+			self._decrid(id(self[-1]))
+			return list.pop(self)
+		else:
+			self._decrid(id(self[idx]))
+			return list.pop(self, idx)
+	
+	def remove(self, val):
+		#This will throw an exception (before _decrid() is called) if val is not in list
+		list.remove(self, val)
+		self._decrid(id(val))

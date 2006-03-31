@@ -57,7 +57,7 @@ class GameObj(object):
 		self.geom = geom #This also calls smart setter, which associates if possible (and loads ang again, eh)
 		self.sync_ode() #Fetch the angle and position from ODE (though we're about to override the position)
 		self.pos = pos #Overwrite ODE position with the passed-in position
-		self.controllers = []
+		self.controllers = util.TrackerList()
 	
 	def _get_geom(self):
 		return self._geom
