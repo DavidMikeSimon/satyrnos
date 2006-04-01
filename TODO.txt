@@ -48,7 +48,6 @@ Stick towards ground: Crouch/add extra friction when sliding
 Stick parallel to ground: Walk/crawl
 
 Air movement:
-Hold D: Prepare for jump (if release as hit the ground, quickly hops off again)
 Stick: Slow drift (only available to the degree that you've already got velocity, and it lowers total velocity)
 
 Pulsing:

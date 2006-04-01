@@ -118,7 +118,7 @@ class TrackerList(list):
 		return r
 
 	def __contains__(self, y):
-		return self.count(y) > 0
+		return self._idcounts.has_key(id(y))
 	
 	def __delitem__(self, y):
 		if not isinstance(y, slice):
