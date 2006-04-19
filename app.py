@@ -187,10 +187,8 @@ def _proc_input():
 					objects[1].body.addTorque((0, 0, -2))
 				elif event.key == K_e:
 					objects[1].body.addTorque((0, 0, 2))
-				elif event.key == K_r:
-					objects[1].ang -= 0.1
 				elif event.key == K_f:
-					objects[1].ang += 0.1
+					objects[1].freeze()
 				elif event.key == K_z:
 					objects[6].body.addTorque((0, 0, -50))
 				elif event.key == K_x:
