@@ -11,6 +11,7 @@ import gameobj
 import colors
 import util
 import controller
+import pen
 
 avgx1, avgy1, avgx2, avgy2 = 0, 0, 0, 0
 maxx1, maxy1, maxx2, maxy2 = 0, 0, 0, 0
@@ -22,38 +23,29 @@ runs = 1
 for i in range(runs):
 	app.sim_init()
 	
-	app.objects.append(gameobj.OImage("ball.png", (0.75, 0.75)))
-	#app.objects.append(gameobj.OImage("ball.png"))
-	app.objects.append(gameobj.OBlock(colors.red, (0.2, 2.5), (0.1, 5), geom=util.box_geom((0.1, 5))))
-	app.objects.append(gameobj.OBlock(colors.green, (2.5, 0.2), (5, 0.1), geom=util.box_geom((5, 0.1))))
-	app.objects.append(gameobj.OBlock(colors.yellow, (4.8, 2.5), (0.1, 5), geom=util.box_geom((0.1, 5))))
-	app.objects.append(gameobj.OBlock(colors.blue, (2.5, 4.8), (5, 0.1), geom=util.box_geom((5, 0.1))))
-	#app.objects.append(gameobj.OBlock(colors.black, (2, 1.5), (0.2, 0.2), geom=util.box_geom((0.2, 0.2))))
-	app.objects.append(gameobj.OBlock(colors.purple, (2.5, 2.5), (1.5, 0.2), body=util.sphere_body(1, 0.75), geom=util.box_geom((1.5, 0.2))))
-	#app.objects.append(gameobj.OBlock(colors.black, (2, 1.5), (1.5, 0.2), geom=util.box_geom((1.5, 0.2))))
+	app.objects.append(gameobj.GameObj((5, 3.5)))
+	app.objects.append(gameobj.GameObj((0.9, 0.9), util.sphere_body(1, 0.375), util.sphere_geom(0.375)))
+	app.objects.append(gameobj.GameObj((0.2, 2.5), geom=util.box_geom((0.1, 5))))
+	app.objects.append(gameobj.GameObj((2.5, 0.2), geom=util.box_geom((5, 0.1))))
+	app.objects.append(gameobj.GameObj((4.8, 2.5), geom=util.box_geom((0.1, 5))))
+	app.objects.append(gameobj.GameObj((2.5, 4.8), geom=util.box_geom((5, 0.1))))
+	app.objects.append(gameobj.GameObj((2.5, 2.5), util.sphere_body(1, 0.75), util.box_geom((1.5, 0.2))))
 	
-	#ballrad = (app.objects[0].img.get_width()-5)/(2.0*app.pixm)
+	app.objects[0].pens.append(pen.PBackground("hills.png", (2, 2), repy=False))
+	app.objects[1].pens.append(pen.PImage("ball.png", (0.75, 0.75)))
+	app.objects[2].pens.append(pen.PBlock(colors.red, (0.1, 5)))
+	app.objects[3].pens.append(pen.PBlock(colors.green, (5, 0.1)))
+	app.objects[4].pens.append(pen.PBlock(colors.yellow, (0.1, 5)))
+	app.objects[5].pens.append(pen.PBlock(colors.blue, (5, 0.1)))
+	app.objects[6].pens.append(pen.PBlock(colors.purple, (1.5, 0.2)))
 	
-	app.objects[0].body = util.sphere_body(1, 0.375)
-	app.objects[0].geom = util.sphere_geom(0.375)
-	app.objects[0].pos = (0.9, 0.9)
-	
-	#app.objects[1].body = util.sphere_body(5, ballrad)
-	#app.objects[1].geom = util.sphere_geom(ballrad)
-	#app.objects[1].pos = (1.4, 1.2)
-	
-	#app.objects[0].body.addForce((5, 0, 0))
-	#app.objects[5].controllers.append(controller.CMagnet(-0.3))
-	#app.objects[5].controllers.append(controller.CBoxMagnet(-2, (1.5, 0.2)))
-	app.objects[5].controllers.append(controller.CLineMagnet(-1, (0.75, 0)))
-	#app.objects[4].controllers.append(controller.CBoxMagnet(-0.2, (5, 0.1)))
-	#app.objects[3].controllers.append(controller.CBoxMagnet(-0.03, (0.1, 2.8)))
-	app.objects[0].controllers.append(controller.CCameraFollow())
+	app.objects[1].controllers.append(controller.CCameraFollow())
+	#app.objects[6].controllers.append(controller.CLineMagnet(-1, (0.75, 0)))
         
 	#app.objects[0].body.addForce((150, 150, 0))
 	
-	#profile.run('app.run()', 'satyrprof')
-	app.run()
+	profile.run('app.run()', 'satyrprof')
+	#app.run()
 	
 	x1 = app.objects[0].pos[0]
 	y1 = app.objects[0].pos[1]

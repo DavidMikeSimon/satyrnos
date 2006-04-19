@@ -174,27 +174,27 @@ def _proc_input():
 			cons.handle(event)
 			if cons.active == 0:
 				if event.key == K_w:
-					objects[0].body.addForce((0, -10, 0))
+					objects[1].body.addForce((0, -10, 0))
 				elif event.key == K_a:
-					objects[0].body.addForce((-10, 0, 0))
+					objects[1].body.addForce((-10, 0, 0))
 				elif event.key == K_s:
-					objects[0].body.addForce((0, 10, 0))
+					objects[1].body.addForce((0, 10, 0))
 				elif event.key == K_d:
-					objects[0].body.addForce((10, 0, 0))
+					objects[1].body.addForce((10, 0, 0))
 				elif event.key == K_c:
-					objects[0].body.addForce((100, 0, 0))
+					objects[1].body.addForce((100, 0, 0))
 				elif event.key == K_q:
-					objects[0].body.addTorque((0, 0, -2))
+					objects[1].body.addTorque((0, 0, -2))
 				elif event.key == K_e:
-					objects[0].body.addTorque((0, 0, 2))
+					objects[1].body.addTorque((0, 0, 2))
 				elif event.key == K_r:
-					objects[0].ang -= 0.1
+					objects[1].ang -= 0.1
 				elif event.key == K_f:
-					objects[0].ang += 0.1
+					objects[1].ang += 0.1
 				elif event.key == K_z:
-					objects[5].body.addTorque((0, 0, -50))
+					objects[6].body.addTorque((0, 0, -50))
 				elif event.key == K_x:
-					objects[5].body.addTorque((0, 0, 50))
+					objects[6].body.addTorque((0, 0, 50))
 
 def run(maxsteps = 0):
 	"""Runs the game. Returns the number of steps ran.
@@ -252,6 +252,7 @@ def run(maxsteps = 0):
 			glClear(GL_COLOR_BUFFER_BIT)
 			glPushMatrix()
 			glTranslatef(winwidth/2 - camera[0]*pixm, winheight/2 - camera[1]*pixm, 0)
+			glScalef(pixm, pixm, 0) #OpenGL units are now game meters, not pixels
 			for o in objects:
 				o.draw()
 			glPopMatrix()

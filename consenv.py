@@ -14,6 +14,8 @@ import colors
 import console
 import controller
 import gameobj
+import pen
+import resman
 from util import *
 
 class ConsDoc(pydoc.TextDoc):

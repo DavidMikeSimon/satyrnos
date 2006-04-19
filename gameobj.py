@@ -1,14 +1,10 @@
-import pygame
 import math
 import ode
 
 import app
 import util
-import colors
-import resman
 
 from OpenGL.GL import *
-
 
 class GameObj(object):
 	"""The base class for in-game objects of all kinds.
@@ -42,15 +38,20 @@ class GameObj(object):
 	        unassociated and destroyed. Additionally, pos and ang
 	        are automatically loaded from geom after it is set, and body's
 			  ang and pos are overwritten.
+			  
 	controllers -- A list of controllers. Each simstep, each controller's
 	               method 'do' is called in order, passed this GameObj as a parameter.
+	pens        -- A list of pens. Each draw step, each pen's method 'draw' is called
+	               in order, passed this GameObj as a parameter. However, most pens
+						probably won't need that GameObj parameter anyways, since draw()
+						is called with GL already translated and rotated correctly.
 	
 	"""
 	
 	def __init__(self, pos = (0.0, 0.0), body = None, geom = None):
 		"""Creates a GameObj. Pos given overrides the position of body and/or geom.
 		"""
-		self._ang = 0.0 #A reasonable default
+		self._ang = 0.0 #A reasonable default (assume whatever original orientation is to be 0.0)
 		self._body = None
 		self._geom = None
 		self.body = body #This calls the smart setter, which loads ang
@@ -58,6 +59,7 @@ class GameObj(object):
 		self.sync_ode() #Fetch the angle and position from ODE (though we're about to override the position)
 		self.pos = pos #Overwrite ODE position with the passed-in position
 		self.controllers = util.TrackerList()
+		self.pens = util.TrackerList()
 	
 	def _get_geom(self):
 		return self._geom
@@ -169,30 +171,21 @@ class GameObj(object):
 		elif self._geom != None:
 			self._fetch_ode_from(self._geom)
 	
-	def _initdraw(self):
-		"""Pushes a GL matrix, translates/rotates to the correct position, scales to meters.
-		
-		After calling this, draw your object as though it was unangled, centered at origin, and with meters as units.
-		"""
-		glPushMatrix()
-		glScalef(app.pixm, app.pixm, 0)
-		glTranslatef(self.pos[0], self.pos[1], 0)
-		if (self.ang > 0.00001):
-			glRotatef(util.rev2deg(self.ang), 0, 0, 1)
-	
-	def _uninitdraw(self):
-		"""Undoes an initdraw. Really, it just pops the GL matrix."""
-		glPopMatrix()
-	
 	def sim(self):
-		"""Does a simulation step for the object. In base GameObj, calls do() on every controller."""
+		"""Does a simulation step for the object; calls do() on every controller."""
 		for c in self.controllers:
 			c.do(self)
 	
 	def draw(self):
-		"""Draws the object. In base GameObj, this does nothing."""
-		pass
-
+		"""Draws the object; pushes correct GL matrix, calls draw() on every pen, restores GL."""
+		glPushMatrix()
+		glTranslatef(self.pos[0], self.pos[1], 0)
+		if (self.ang > 0.00001):
+			glRotatef(util.rev2deg(self.ang), 0, 0, 1)
+		for p in self.pens:
+			p.draw(self)
+		glPopMatrix()
+	
 	def freeze(self):
 		"""Kills the object's linear and angular velocity."""
 		if (self._body == None):
@@ -205,114 +198,3 @@ class GameObj(object):
 	ang = property(_get_ang, _set_ang)
 	body = property(_get_body, _set_body)
 	geom = property(_get_geom, _set_geom)
-
-class OWireBlock(GameObj):
-	"""An object represented by a wire-frame block (borders and diagonals).
-	
-	Data attributes:
-	color: The color to draw the lines in.
-	size: A 2-tuple with the width and height of the block in meters
-	"""
-	
-	def __init__(self, color = colors.blue, pos = (0.0, 0.0), size = (1.0, 1.0), body = None, geom = None):
-		"""Creates an OWireBlock. Given position and size are in meters.
-		"""
-		
-		GameObj.__init__(self, pos, body, geom)
-		self.color = color
-		self.size = size
-		
-	def draw(self):
-		halfsize = util.tupm(self.size, 0.5)
-		topleft = (-halfsize[0], -halfsize[1])
-		topright = (halfsize[0], -halfsize[1])
-		bottomleft = (-halfsize[0], halfsize[1])
-		bottomright = (halfsize[0], halfsize[1])
-		self._initdraw()
-		glColor3fv(self.color)
-		glBegin(GL_LINES)
-		for pair in (
-		(topleft, topright),
-		(bottomleft, bottomright),
-		(topleft, bottomleft),
-		(topright, bottomright),
-		(topleft, bottomright),
-		(topright, bottomleft)):
-			glVertex2fv(pair[0])
-			glVertex2fv(pair[1])
-		glEnd()
-		self._uninitdraw()
-
-class OBlock(GameObj):
-	"""An object represented by a solid-colored block.
-	
-	Data attributes:
-	color: The color to draw the lines in.
-	size: A 2-tuple with the width and height of the block in meters
-	"""
-	
-	def __init__(self, color = colors.blue, pos = (0.0, 0.0), size = (1.0, 1.0), body = None, geom = None):
-		"""Creates an OBlock. Given position and size are in meters.
-		"""
-		
-		GameObj.__init__(self, pos, body, geom)
-		self.color = color
-		self.size = size
-		
-	def draw(self):
-		halfsize = util.tupm(self.size, 0.5)
-		topleft = (-halfsize[0], -halfsize[1])
-		topright = (halfsize[0], -halfsize[1])
-		bottomleft = (-halfsize[0], halfsize[1])
-		bottomright = (halfsize[0], halfsize[1])
-		self._initdraw()
-		glColor3fv(self.color)
-		glBegin(GL_QUADS)
-		glVertex2fv(topleft)
-		glVertex2fv(topright)
-		glVertex2fv(bottomright)
-		glVertex2fv(bottomleft)
-		glEnd()
-		self._uninitdraw()
-
-class OImage(GameObj):
-	"""An object represented by a static image.
-
-	Data attributes:
-	tex: A resman.Texture instance for the image to display.
-	size: The size of the image in meters.
-	"""
-	
-	def __init__(self, imgfile, size = (0.0, 0.0), pos = (0.0, 0.0), body = None, geom = None):
-		"""Creates an OImage from the given image file. Size given is in meters.
-		"""
-		
-		GameObj.__init__(self, pos, body, geom)
-		self.tex = resman.Texture(imgfile)
-		self.size = size
-		
-	def draw(self):
-		halfsize = util.tupm(self.size, 0.5)
-		topleft = (-halfsize[0], -halfsize[1])
-		topright = (halfsize[0], -halfsize[1])
-		bottomleft = (-halfsize[0], halfsize[1])
-		bottomright = (halfsize[0], halfsize[1])
-		
-		self._initdraw()
-		glEnable(GL_TEXTURE_2D)
-		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE)
-		glBindTexture(GL_TEXTURE_2D, self.tex.glname)
-		
-		glBegin(GL_QUADS)
-		glTexCoord2f(0.0, 1.0)
-		glVertex2fv(topleft)
-		glTexCoord2f(1.0, 1.0)
-		glVertex2fv(topright)
-		glTexCoord2f(1.0, 0.0)
-		glVertex2fv(bottomright)
-		glTexCoord2f(0.0, 0.0)
-		glVertex2fv(bottomleft)
-		glEnd()
-		
-		glDisable(GL_TEXTURE_2D)
-		self._uninitdraw()

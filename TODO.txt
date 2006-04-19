@@ -2,6 +2,7 @@ Bugs:
 - Friction should decrease velocity
 - Fuzzy GLUT text in Windows
 - GameObj._setBody needs to destroy old body
+- Make console 'help()' work better
 
 Short term features:
 - Magnets also move magnet towards pulled object
@@ -16,8 +17,7 @@ Short term features:
 - HUD, FPS display
 - Level testing architecture
 - Unit tests for modules
-- One GameObj, many Drawer types
-- For checking draw clipping, use Drawers
+- For checking draw clipping, use Pens
 - Automatic unwedgie-ing (powerful magnets can cause persistent overlap)
 - Derive body/geom (scaling, 2d, angle conversion)
 
@@ -30,7 +30,6 @@ Long term features:
 - Windows launcher (maybe self-contained binary)
 
 Design notes:
-- Associate Controllers with Drawers in same GameObj by keeping Drawers in a TrackerList
 - Don't have Controllers in one GameObj keep refs to other Controllers; refs to GameObjs instead
 
 ----
