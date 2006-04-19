@@ -31,7 +31,7 @@ for i in range(runs):
 	app.objects.append(gameobj.GameObj((2.5, 4.8), geom=util.box_geom((5, 0.1))))
 	app.objects.append(gameobj.GameObj((2.5, 2.5), util.sphere_body(1, 0.75), util.box_geom((1.5, 0.2))))
 	
-	app.objects[0].pens.append(pen.PBackground("hills.png", (2, 2), repy=False))
+	app.objects[0].pens.append(pen.PBackground("hills.png", (2, 2), repy=True))
 	app.objects[1].pens.append(pen.PImage("ball.png", (0.75, 0.75)))
 	app.objects[2].pens.append(pen.PBlock(colors.red, (0.1, 5)))
 	app.objects[3].pens.append(pen.PBlock(colors.green, (5, 0.1)))
@@ -44,8 +44,8 @@ for i in range(runs):
         
 	#app.objects[0].body.addForce((150, 150, 0))
 	
-	profile.run('app.run()', 'satyrprof')
-	#app.run()
+	#profile.run('app.run()', 'satyrprof')
+	app.run()
 	
 	x1 = app.objects[0].pos[0]
 	y1 = app.objects[0].pos[1]

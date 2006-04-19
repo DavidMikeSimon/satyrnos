@@ -162,7 +162,7 @@ class PBackground:
 		topleft = (-halfsize[0] + offset[0] - repoffset[0], -halfsize[1] + offset[1] - repoffset[1])
 		topright = (halfsize[0] + offset[0] + repoffset[0], -halfsize[1] + offset[1] - repoffset[1])
 		bottomleft = (-halfsize[0] + offset[0] - repoffset[0], halfsize[1] + offset[1] + repoffset[1])
-		bottomright = (halfsize[0] + offset[0] + repoffset[0], halfsize[1] + offset[1] - repoffset[1])
+		bottomright = (halfsize[0] + offset[0] + repoffset[0], halfsize[1] + offset[1] + repoffset[1])
 		
 		#Texture coordinates are still mathematically oriented (up-right is +/+, not down-right)
 		texbottomleft = (0 - texoffset[0], 0 - texoffset[1])
