@@ -3,7 +3,6 @@ Bugs:
 - Fuzzy GLUT text in Windows
 - GameObj._setBody needs to destroy old body
 - Make console 'help()' work better
-- Clamping PBackground
 
 Short term features:
 - Magnets also move magnet towards pulled object

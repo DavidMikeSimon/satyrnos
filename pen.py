@@ -117,11 +117,11 @@ class PBackground:
 	size: In meters, the size of the region centered at the object's position over which to tile the image.
 	tilesize: The size of one tile in meters.
 	parallax: 2-tuple of amount to parallax-nudge in each axis (in meters per meters of camera movement).
-	offset: Like parallax, but simply adds the value in meters directly; camera is not involved.
 	clamp: 2-tuple of booleans, clamps the respective axis with GL instead of repeating
+	offset: Like parallax, but simply adds the value in meters directly; camera is not involved.
 	"""
 	
-	def __init__(self, imgfile, size, tilesize, parallax = (0.0, 0.0), offset = (0.0, 0.0), clamp = (False, False)):
+	def __init__(self, imgfile, size, tilesize, parallax = (0.0, 0.0), clamp = (False, False), offset = (0.0, 0.0)):
 		"""Creates an PBackground from the given image file. Size given is in meters.
 		"""
 		self.tex = resman.Texture(imgfile)
@@ -143,7 +143,7 @@ class PBackground:
 		
 		paraoffset = [0, 0] #For applying parallax
 		for axis in range(0, 2):
-			paraoffset[axis] = (self.parallax[axis]*app.camera[axis] + self.offset[axis])/self.tilesize[axis]
+			paraoffset[axis] = (self.parallax[axis]*(app.camera[axis]-obj.pos[axis]) + self.offset[axis])/self.tilesize[axis]
 		
 		#Texture coordinates are still mathematically oriented (up-right is +/+, not down-right)
 		texbottomleft = (0 - texoffset[0] + paraoffset[0], 0 - texoffset[1] - paraoffset[1])
@@ -155,13 +155,15 @@ class PBackground:
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE)
 		glBindTexture(GL_TEXTURE_2D, self.tex.glname)
 		
+		#0x812F is GL_CLAMP_TO_EDGE, which seems to be missing from PyOpenGL
+		
 		if (self.clamp[0]):
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP)
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, 0x812F)
 		else:
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
 		
 		if (self.clamp[1]):
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP)
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, 0x812F)
 		else:
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
 		

@@ -31,9 +31,8 @@ for i in range(runs):
 	app.objects.append(gameobj.GameObj((2.5, 4.8), geom=util.box_geom((5, 0.1))))
 	app.objects.append(gameobj.GameObj((2.5, 2.5), util.sphere_body(1, 0.75), util.box_geom((1.5, 0.2))))
 	
-	app.objects[0].pens.append(pen.PBackground("swirlybg.png", (100, 100), (2, 2), (-0.9, 0.0)))
-	app.objects[0].pens.append(pen.PBackground("hills.png", (100, 1.2), (1.2, 1.2), (-0.7, 0.0), (False, False)))
-	app.objects[0].pens.append(pen.PWireBlock(colors.black, (1.2, 1.2)))
+	app.objects[0].pens.append(pen.PBackground("swirlybg.png", (100, 100), (2, 2), (-0.9, -0.45)))
+	app.objects[0].pens.append(pen.PBackground("hills.png", (100, 100), (1.2, 1.2), (-0.7, -0.35), (False, True)))
 	app.objects[1].pens.append(pen.PImage("ball.png", (0.75, 0.75)))
 	app.objects[2].pens.append(pen.PBlock(colors.red, (0.1, 5)))
 	app.objects[3].pens.append(pen.PBlock(colors.green, (5, 0.1)))
