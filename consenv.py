@@ -18,6 +18,32 @@ import pen
 import resman
 from util import *
 
+class Watcher(console.OutputBox):
+	"""Displays continually-updated information to an on-screen debugging window.
+	
+	Caller is expected to make sure that expr is non-Null before calling update().
+	
+	Data attributes:
+	expr -- Runs this expression on each call to update(), sets buffer to the result.
+	"""
+	def __init__(self, rect = None, expr = None):
+		console.OutputBox.__init__(self, rect)
+		self.expr = expr
+		self.bufferlen = self.dispsize()
+	
+	def update(self):
+		self.clear()
+		try:
+			self.append(self.expr + ":\n\n" + repr(eval(self.expr)))
+		except:
+			self.append("EXCEPTION")
+
+#These Watchers will be set up in app.disp_init() and called from app.run()
+wa = None
+wb = None
+wc = None
+wd = None
+
 class ConsDoc(pydoc.TextDoc):
 	#The regular bolder tries to replace X with X<BKSP>X
 	#That doesn't work very well for the debugging console output

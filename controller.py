@@ -113,7 +113,7 @@ class CLineMagnet:
 			#Find the nearest point on the line to the object
 			right_end = util.rotp(util.tupa(magobj.pos, self.end), magobj.pos, magobj.ang)
 			left_end = util.rotp(util.tupa(magobj.pos, util.tupm(self.end, -1)), magobj.pos, magobj.ang)
-			nearest = util.nearest_on_line(left_end, right_end, o.pos)
+			nearest = util.nearest_on_line((left_end, right_end), o.pos)
 			
 			#Ignore objects outside range, if there's a range set
 			if self.rad > 0 and self.rad < util.dist(nearest, o.pos):
@@ -131,7 +131,7 @@ class CBoxMagnet:
 	
 	Data attributes:
 	pow -- The amount of force applied per simstep. If negative, pulls instead of pushing.
-	size -- The size of the magnet box, centered at the magnet object's pos
+	size -- The size of the magnet box, centered at the magnet object's pos.
 	rad -- The radius of the effect in meters. If non-positive, unlimited radius.
 	loss -- The amount of force lost per meter distance from the object.
 	      This just brings 'pow' that much closer to zero depending on distance.
@@ -160,30 +160,9 @@ class CBoxMagnet:
 			#Ignore objects outside the ODE force system
 			if o.body == None:
 				continue
-
-			#Find the nearest point on the box to the object
-			#If the object is inside the box, then the far object's position is the nearest point
-			#Otherwise, check all four outer lines and see which resulting point is the nearest
-			rect = pygame.Rect((0,0), self.size)
-			rect.center = magobj.pos
-			nearest = o.pos
-			if not rect.collidepoint(o.pos[0], o.pos[1]):
-				halfwidth = self.size[0]/2.0
-				halfheight = self.size[1]/2.0
-				nearest = magobj.pos
-				dist = util.dist(nearest, o.pos)
-				tl = util.rotp((magobj.pos[0]-halfwidth, magobj.pos[1]-halfheight), magobj.pos, magobj.ang)
-				tr = util.rotp((magobj.pos[0]+halfwidth, magobj.pos[1]-halfheight), magobj.pos, magobj.ang)
-				bl = util.rotp((magobj.pos[0]-halfwidth, magobj.pos[1]+halfheight), magobj.pos, magobj.ang)
-				br = util.rotp((magobj.pos[0]+halfwidth, magobj.pos[1]+halfheight), magobj.pos, magobj.ang)
-				for s in ((tl,tr), (bl,br), (tl,bl), (tr,br)):
-					cand = util.nearest_on_line(s[0], s[1], o.pos)
-					cand_dist = util.dist(cand, o.pos)
-					if cand_dist < dist:
-						dist = cand_dist
-						nearest = cand
 			
 			#Ignore objects outside range, if there's a range set
+			nearest = util.nearest_in_box(magobj.pos, self.size, magobj.ang, o.pos)
 			if self.rad > 0 and self.rad < util.dist(nearest, o.pos):
 				continue
 			
@@ -197,13 +176,16 @@ class CCameraFollow:
 	
 	Data attributes:
 	active -- If false, then do() does nothing.
-	bounds -- Prevents the player from viewing anything outside this rectangle (in meters). Can be None.
+	boundlist -- A list of rectangles that the camera's center will be restricted to. If there any boxes
+	             then the camera will refuse to go anywhere where it isn't in at least one of the boxes.
+	             If the list is empty, then the camera can go anywhere. The rectangles are specified
+					 as ((pos), (size)).
 	"""
 	
-	def __init__(self, bounds = None, active = True):
-		self.bounds = bounds
+	def __init__(self, boundlist = [], active = True):
+		self.boundlist = boundlist
 		self.active = active
-
+	
 	def do(self, obj):
 		if not self.active:
 			return

@@ -3,7 +3,7 @@ from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
-import colors, console, resman, util
+import colors, console, resman, util, consenv
 
 #The size of the display window in pixels
 winwidth = None
@@ -70,6 +70,10 @@ def disp_init():
 	cons = console.Console()
 	sys.stderr = cons.pseudofile
 	sys.stdout = cons.pseudofile
+	consenv.wa = consenv.Watcher(pygame.Rect(20, winheight/3-30, winwidth/4, winheight/3-20))
+	consenv.wb = consenv.Watcher(pygame.Rect(20, 2*winheight/3-30, winwidth/4, winheight/3-20))
+	consenv.wc = consenv.Watcher(pygame.Rect(3*winwidth/4 - 20, winheight/3-30, winwidth/4, winheight/3-20))
+	consenv.wd = consenv.Watcher(pygame.Rect(3*winwidth/4 - 20, 2*winheight/3-30, winwidth/4, winheight/3-20))
 
 
 def sim_init():
@@ -81,7 +85,7 @@ def sim_init():
 	global odeworld, odespace, objects, camera
 	odeworld = ode.World()
 	odeworld.setQuickStepNumIterations(10)
-	odeworld.setERP(0.0) #Setting this to zero stops annoying shaking, can still set joint ERPs
+	odeworld.setERP(0.1)
 	odespace = ode.HashSpace()
 	objects = util.TrackerList()
 	camera = (2, 1.5)
@@ -106,6 +110,10 @@ def disp_deinit():
 	pixm = None
 	sys.stderr = sys.__stderr__
 	sys.stdin = sys.__stdin__
+	consenv.wa = None
+	consenv.wb = None
+	consenv.wc = None
+	consenv.wd = None
 
 
 def sim_deinit():
@@ -187,6 +195,8 @@ def _proc_input():
 					objects[1].body.addTorque((0, 0, -2))
 				elif event.key == K_e:
 					objects[1].body.addTorque((0, 0, 2))
+				elif event.key == K_r:
+					objects[6].ang += 0.1
 				elif event.key == K_f:
 					objects[1].freeze()
 				elif event.key == K_z:
@@ -248,13 +258,21 @@ def run(maxsteps = 0):
 		#Draw everything, if the display is enabled
 		if (maxfps):
 			glClear(GL_COLOR_BUFFER_BIT)
+			
 			glPushMatrix()
 			glTranslatef(winwidth/2 - camera[0]*pixm, winheight/2 - camera[1]*pixm, 0)
 			glScalef(pixm, pixm, 0) #OpenGL units are now game meters, not pixels
 			for o in objects:
 				o.draw()
 			glPopMatrix()
+			
+			for w in (consenv.wa, consenv.wb, consenv.wc, consenv.wd):
+				if (w.expr != None):
+					w.update()
+					w.draw()
+			
 			cons.draw()
+			
 			glFlush()
 			pygame.display.flip()
 		

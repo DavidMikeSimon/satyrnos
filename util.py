@@ -30,11 +30,11 @@ def tupa(a, b):
 def rotp(pt, cen, ang):
 	"""Rotates a point around a center-point a given number of cw revolutions."""
 
-	if ang < 0.00001:
+	if abs(ang) < 0.000001:
 		return pt
-	a = rev2rad(ang)
+	a = rev2rad(ang) #Convert to ccw radians
 	h = dist(cen, pt) #Radius of circle
-	b = math.atan2(pt[1]-cen[1], pt[0]-cen[0]) #Previous angle between the two
+	b = -math.atan2(pt[1]-cen[1], pt[0]-cen[0]) #Previous angle between the two (neg to make it ccw)
 	return (h*math.cos(a+b)+cen[0], -1*h*math.sin(a+b)+cen[1])
 
 def sphere_body(density, radius):
@@ -74,17 +74,55 @@ def sphere_geom(radius):
 def dist(a, b):
 	"""Returns the distance between two 2-tuple positions.
 	"""
-	return math.sqrt(abs((a[0]-b[0])**2.0 + (a[1]-b[1])**2.0))
+	return math.sqrt((a[0]-b[0])**2.0 + (a[1]-b[1])**2.0)
 
-def nearest_on_line(a, b, p):
+def inside_box(boxcen, size, ang, p):
+	"""Returns true if p is with a box centered at boxcen of size size rotated by angle ang.
+	"""
+	#Rotate the point in the opposite direction around box center, check against unrotated box
+	realp = rotp(p, boxcen, -ang);
+	for axis in range(0, 2):
+		if (realp[axis] > boxcen[axis] + size[axis]/2): return False
+		if (realp[axis] < boxcen[axis] - size[axis]/2): return False
+	return True
+
+def nearest_on_line((a, b), p):
 	"""Returns the nearest point on a line segment to an arbitrary point.
 	
-	The line is defined by a and b, and the point is p.
+	The line is defined by the end-points a and b, and the point is p.
 	"""
 	u = (p[0]-a[0])*(b[0]-a[0]) + (p[1]-a[1])*(b[1]-a[1])
 	u /= abs((a[0]-b[0])**2 + (a[1]-b[1])**2)
 	u = min(max(0.0, u), 1.0)
 	return (a[0] + u*(b[0]-a[0]), a[1] + u*(b[1]-a[1]))
+
+def nearest_in_box(boxcen, size, ang, p):
+	"""Returns the nearest point in a box to an arbitrary point.
+	
+	The box is centered at boxpos, and rotated by ang. Of course, if the point is inside the
+	box, then the nearest point in the box to the point is itself.
+	"""
+	
+	nearest = p
+	if inside_box(boxcen, size, ang, p):
+		return nearest
+	
+	halfwidth = size[0]/2.0
+	halfheight = size[1]/2.0
+	tl = rotp((boxcen[0]-halfwidth, boxcen[1]-halfheight), boxcen, ang)
+	tr = rotp((boxcen[0]+halfwidth, boxcen[1]-halfheight), boxcen, ang)
+	bl = rotp((boxcen[0]-halfwidth, boxcen[1]+halfheight), boxcen, ang)
+	br = rotp((boxcen[0]+halfwidth, boxcen[1]+halfheight), boxcen, ang)
+
+	curdist = dist(nearest, boxcen)
+	for s in ((tl,tr), (bl,br), (tl,bl), (tr,br)):
+		cand = nearest_on_line(s, p)
+		cand_dist = dist(cand, p)
+		if cand_dist < curdist:
+			curdist = cand_dist
+			nearest = cand
+	
+	return nearest
 
 
 class TrackerList(list):

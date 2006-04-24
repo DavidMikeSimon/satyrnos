@@ -12,6 +12,7 @@ import colors
 import util
 import controller
 import pen
+import consenv
 
 avgx1, avgy1, avgx2, avgy2 = 0, 0, 0, 0
 maxx1, maxy1, maxx2, maxy2 = 0, 0, 0, 0
@@ -29,7 +30,8 @@ for i in range(runs):
 	app.objects.append(gameobj.GameObj((2.5, 0.2), geom=util.box_geom((5, 0.1))))
 	app.objects.append(gameobj.GameObj((4.8, 2.5), geom=util.box_geom((0.1, 5))))
 	app.objects.append(gameobj.GameObj((2.5, 4.8), geom=util.box_geom((5, 0.1))))
-	app.objects.append(gameobj.GameObj((2.5, 2.5), util.sphere_body(1, 0.75), util.box_geom((1.5, 0.2))))
+	#app.objects.append(gameobj.GameObj((2.5, 2.5), util.sphere_body(1, 0.75), util.box_geom((1.5, 0.2))))
+	app.objects.append(gameobj.GameObj((2.5, 2.5), geom=util.box_geom((1.5, 0.2))))
 	
 	app.objects[0].pens.append(pen.PBackground("swirlybg.png", (100, 100), (2, 2), (-0.9, -0.45)))
 	app.objects[0].pens.append(pen.PBackground("hills.png", (100, 100), (1.2, 1.2), (-0.7, -0.35), (False, True)))
@@ -39,10 +41,11 @@ for i in range(runs):
 	app.objects[4].pens.append(pen.PBlock(colors.yellow, (0.1, 5)))
 	app.objects[5].pens.append(pen.PBlock(colors.blue, (5, 0.1)))
 	app.objects[6].pens.append(pen.PBlock(colors.purple, (1.5, 0.2)))
+	app.objects[6].ang = 0.3
 	
 	app.objects[1].controllers.append(controller.CCameraFollow())
-	#app.objects[6].controllers.append(controller.CLineMagnet(-1, (0.75, 0)))
-        
+	app.objects[6].controllers.append(controller.CBoxMagnet(-0.1, (1.5, 0.2)))
+	
 	#app.objects[0].body.addForce((150, 150, 0))
 	
 	#profile.run('app.run()', 'satyrprof')

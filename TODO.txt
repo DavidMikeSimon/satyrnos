@@ -5,6 +5,7 @@ Bugs:
 - Make console 'help()' work better
 
 Short term features:
+- Debugging controller (executes arbitrary expression)
 - Magnets also move magnet towards pulled object
 - Antialiasing
 - Options dialog, saving options
@@ -13,7 +14,6 @@ Short term features:
 - Level loading
 - Control mapping
 - Gamepad support
-- Debug watcher boxes
 - HUD, FPS display
 - Level testing architecture
 - Unit tests for modules

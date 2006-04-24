@@ -5,7 +5,6 @@ from OpenGL.GLUT import *
 
 import app
 import colors
-import consenv
 
 helphelp = "Interactive Python help is not available in Satyrnose. You can still use help(class) or help(module)."
 quithelp = "To close the debugging console, hit the escape key."
@@ -126,6 +125,11 @@ class OutputBox:
 	def dispsize(self):
 		"""Returns the possible number of lines that can be displayed by the OutputBox at once."""
 		return self.rect.height/15
+	
+	def clear(self):
+		"""Empties the buffer."""
+		self.buffer = [""]
+		self.scroll = 0
 
 	def draw(self):
 		"""Draws the OutputBox."""
@@ -212,6 +216,8 @@ class OutputBox:
 	def scroll_down(self):
 		"""Scrolls down one screenful."""
 		self.scroll = max(self.scroll-self.dispsize(), 0)
+
+import consenv
 
 class Console:
 	"""An in-game debugging console.

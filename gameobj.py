@@ -194,6 +194,10 @@ class GameObj(object):
 		self._body.setLinearVel((0, 0, 0))
 		self._body.setAngularVel((0, 0, 0))
 	
+	def info(self):
+		"""Returns a string like so '(x,y) ang', all values expanded to three decimal places."""
+		return "(%2.3f, %2.3f) %2.3f" % (self.pos[0], self.pos[1], self.ang)
+	
 	pos = property(_get_pos, _set_pos)
 	ang = property(_get_ang, _set_ang)
 	body = property(_get_body, _set_body)
