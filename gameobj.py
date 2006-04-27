@@ -10,46 +10,45 @@ class GameObj(object):
 	"""The base class for in-game objects of all kinds.
 
 	This base class can also be used for objects which are not drawn, but which
-	still have physical effects through controllers and/or ODE. You'll have
+	still have physical effects through drives and/or ODE. You'll have
 	to use a derivative of GameObj if you actually want to see anything, but
 	the actual simulation behavior of game objects is determined by ODE settings
-	and by controllers, both of which are part of this base object.
+	and by drives, both of which are part of this base object.
 
 	Data attributes:
 	pos -- 2-tuple of the absolute location of the center of the object, in meters.
 	ang -- The angle of the object, in clockwise revolutions.
-	       Set these instead of calling methods on body or geom: ODE
-	       will automatically be updated when these are set, and
-	       changes in ODE will be restored back to these when restorePhys()
-	       is called. Note that ang will be wrapped to (-0.5, 0.5) both
-	       when being set and when being fetched from ODE.
-			 
+		Set these instead of calling methods on body or geom: ODE
+		will automatically be updated when these are set, and
+		changes in ODE will be restored back to these when restorePhys()
+		is called. Note that ang will be wrapped to (-0.5, 0.5) both
+		when being set and when being fetched from ODE.
 	body -- The ODE body used for physical dynamics.
-	        This can be None if you don't want an object to ever move.
-	        Setting body automatically adjusts geom as needed
-	        (i.e. setting collision groups, calling set_body(), etc).
-	        The old body is also automatically unassociated and destroyed.
-	        Additionally, pos and ang are automatically loaded from body
-	        after it is set, and geom's ang and pos are overwritten.
+		This can be None if you don't want an object to ever move.
+		Setting body automatically adjusts geom as needed
+		(i.e. setting collision groups, calling set_body(), etc).
+		The old body is also automatically unassociated and destroyed.
+		Additionally, pos and ang are automatically loaded from body
+		after it is set, and geom's ang and pos are overwritten.
 	geom -- The ODE geometry used for collision detection.
-	        This can be None if you don't want an object to ever collide.
-	        Setting geom automatically results it in being associated with
-	        body, if there is one set. The old geom is also automatically
-	        unassociated and destroyed. Additionally, pos and ang
-	        are automatically loaded from geom after it is set, and body's
-			  ang and pos are overwritten.
-			  
-	controllers -- A list of controllers. Each simstep, each controller's
-	               method 'do' is called in order, passed this GameObj as a parameter.
-	pens        -- A list of pens. Each draw step, each pen's method 'draw' is called
-	               in order, passed this GameObj as a parameter. However, most pens
-						probably won't need that GameObj parameter anyways, since draw()
-						is called with GL already translated and rotated correctly.
+		This can be None if you don't want an object to ever collide.
+		Setting geom automatically results it in being associated with
+		body, if there is one set. The old geom is also automatically
+		unassociated and destroyed. Additionally, pos and ang
+		are automatically loaded from geom after it is set, and body's
+		ang and pos are overwritten.
+	drives -- A util.TrackerList of drives. Each simstep, each drive's step method
+		is called in order. Each frame, every object's predraw method
+		is called, then after that's done, every object's draw method
+		is called.
 	
 	"""
 	
-	def __init__(self, pos = (0.0, 0.0), body = None, geom = None):
+	def __init__(self, pos = (0.0, 0.0), body = None, geom = None, drives = util.TrackerList()):
 		"""Creates a GameObj. Pos given overrides the position of body and/or geom.
+		
+		If the drives argument passed in is not a TrackerList, then it is converted to
+		one for you.
 		"""
 		self._ang = 0.0 #A reasonable default (assume whatever original orientation is to be 0.0)
 		self._body = None
@@ -58,8 +57,10 @@ class GameObj(object):
 		self.geom = geom #This also calls smart setter, which associates if possible (and loads ang again, eh)
 		self.sync_ode() #Fetch the angle and position from ODE (though we're about to override the position)
 		self.pos = pos #Overwrite ODE position with the passed-in position
-		self.controllers = util.TrackerList()
-		self.pens = util.TrackerList()
+		if not isinstance(drives, util.TrackerList):
+			self.drives = drives
+		else:
+			self.drives = util.TrackerList(drives)
 	
 	def _get_geom(self):
 		return self._geom
@@ -155,7 +156,7 @@ class GameObj(object):
 		"""Sets position and rotation based on the ODE state, cancels non-two-dimensional motion.
 		
 		This is called automatically by the main loop after the simstep is ran, so it isn't
-		neccessary for controllers or game objects to call it themselves.
+		neccessary for drives or game objects to call it themselves.
 		"""
 		
 		if self._body != None:
@@ -171,19 +172,24 @@ class GameObj(object):
 		elif self._geom != None:
 			self._fetch_ode_from(self._geom)
 	
-	def sim(self):
-		"""Does a simulation step for the object; calls do() on every controller."""
-		for c in self.controllers:
-			c.do(self)
+	def step(self):
+		"""Does a simulation step for the object; calls do() on every drive."""
+		for d in self.drives:
+			d.step(self)
+	
+	def predraw(self):
+		"""Calls predraw() on every drive."""
+		for d in self.drives:
+			d.predraw(self)
 	
 	def draw(self):
-		"""Draws the object; pushes correct GL matrix, calls draw() on every pen, restores GL."""
+		"""Draws the object; pushes correct GL matrix, calls draw() on every drive, restores GL."""
 		glPushMatrix()
 		glTranslatef(self.pos[0], self.pos[1], 0)
 		if (self.ang > 0.00001):
 			glRotatef(util.rev2deg(self.ang), 0, 0, 1)
-		for p in self.pens:
-			p.draw(self)
+		for d in self.drives:
+			d.draw(self)
 		glPopMatrix()
 	
 	def freeze(self):

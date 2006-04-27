@@ -163,9 +163,9 @@ def _sim_step():
 		if o.body != None:
 			o.sync_ode()
 
-	#Have each object do any simulation stuff it needs (this includes calling do() on controllers)
+	#Have each object do any simulation stuff it needs (this includes calling do() on drives)
 	for o in objects:
-		o.sim()
+		o.step()
 
 def _proc_input():
 	"""Looks for input from the keyboard/joystick/etc, does the appropriate thing.
@@ -262,6 +262,9 @@ def run(maxsteps = 0):
 			glPushMatrix()
 			glTranslatef(winwidth/2 - camera[0]*pixm, winheight/2 - camera[1]*pixm, 0)
 			glScalef(pixm, pixm, 0) #OpenGL units are now game meters, not pixels
+			
+			for o in objects:
+				o.predraw()
 			for o in objects:
 				o.draw()
 			glPopMatrix()

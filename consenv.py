@@ -12,10 +12,13 @@ from pygame.locals import *
 import app
 import colors
 import console
-import controller
 import gameobj
-import pen
 import resman
+import camera
+import drive
+import image
+import background
+import magnet
 from util import *
 
 class Watcher(console.OutputBox):
@@ -37,8 +40,8 @@ class Watcher(console.OutputBox):
 			self.append(self.expr + ":\n\n" + repr(eval(self.expr)))
 		except:
 			self.append("EXCEPTION")
-
-#These Watchers will be set up in app.disp_init() and called from app.run()
+			
+#These Watchers will be set up in app.disp_init() and drawn from app.run()
 wa = None
 wb = None
 wc = None

@@ -17,8 +17,7 @@ Short term features:
 - HUD, FPS display
 - Level testing architecture
 - Unit tests for modules
-- For checking draw clipping, use Pens
-- Automatic unwedgie-ing (powerful magnets can cause persistent overlap)
+- For checking draw clipping, have another Drive method
 - Derive body/geom (scaling, 2d, angle conversion)
 
 Long term features:
@@ -30,7 +29,7 @@ Long term features:
 - Windows launcher (maybe self-contained binary)
 
 Design notes:
-- Don't have Controllers in one GameObj keep refs to other Controllers; refs to GameObjs instead
+- Don't have Drive in one GameObj keep refs to other Drives; refs to GameObjs instead
 
 ----
 Theoretical Controller Configuration:

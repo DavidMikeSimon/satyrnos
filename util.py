@@ -1,7 +1,6 @@
-import pygame, os, ode
+import pygame, os, ode, math
 
-import app, math
-
+import app
 
 def rev2rad(ang):
 	"""Converts an angle in cw revolutions to ccw radians.

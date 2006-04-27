@@ -10,9 +10,11 @@ import app
 import gameobj
 import colors
 import util
-import controller
-import pen
 import consenv
+import magnet
+import camera
+import background
+import image
 
 avgx1, avgy1, avgx2, avgy2 = 0, 0, 0, 0
 maxx1, maxy1, maxx2, maxy2 = 0, 0, 0, 0
@@ -33,18 +35,17 @@ for i in range(runs):
 	#app.objects.append(gameobj.GameObj((2.5, 2.5), util.sphere_body(1, 0.75), util.box_geom((1.5, 0.2))))
 	app.objects.append(gameobj.GameObj((2.5, 2.5), geom=util.box_geom((1.5, 0.2))))
 	
-	app.objects[0].pens.append(pen.PBackground("swirlybg.png", (100, 100), (2, 2), (-0.9, -0.45)))
-	app.objects[0].pens.append(pen.PBackground("hills.png", (100, 100), (1.2, 1.2), (-0.7, -0.35), (False, True)))
-	app.objects[1].pens.append(pen.PImage("ball.png", (0.75, 0.75)))
-	app.objects[2].pens.append(pen.PBlock(colors.red, (0.1, 5)))
-	app.objects[3].pens.append(pen.PBlock(colors.green, (5, 0.1)))
-	app.objects[4].pens.append(pen.PBlock(colors.yellow, (0.1, 5)))
-	app.objects[5].pens.append(pen.PBlock(colors.blue, (5, 0.1)))
-	app.objects[6].pens.append(pen.PBlock(colors.purple, (1.5, 0.2)))
+	app.objects[0].drives.append(background.DBackground("swirlybg.png", (100, 100), (2, 2), (-0.9, -0.45)))
+	app.objects[0].drives.append(background.DBackground("hills.png", (100, 100), (1.2, 1.2), (-0.7, -0.35), (False, True)))
+	app.objects[1].drives.append(image.DImage("ball.png", (0.75, 0.75)))
+	app.objects[1].drives.append(camera.DCameraFollow())
+	app.objects[2].drives.append(image.DBlock(colors.red, (0.1, 5)))
+	app.objects[3].drives.append(image.DBlock(colors.green, (5, 0.1)))
+	app.objects[4].drives.append(image.DBlock(colors.yellow, (0.1, 5)))
+	app.objects[5].drives.append(image.DBlock(colors.blue, (5, 0.1)))
+	app.objects[6].drives.append(image.DBlock(colors.purple, (1.5, 0.2)))
+	app.objects[6].drives.append(magnet.DBoxMagnet(-0.1, (1.5, 0.2)))
 	app.objects[6].ang = 0.3
-	
-	app.objects[1].controllers.append(controller.CCameraFollow())
-	app.objects[6].controllers.append(controller.CBoxMagnet(-0.1, (1.5, 0.2)))
 	
 	#app.objects[0].body.addForce((150, 150, 0))
 	
