@@ -36,7 +36,7 @@ for i in range(runs):
 	app.objects.append(gameobj.GameObj((2.5, 2.5), geom=util.box_geom((1.5, 0.2))))
 	
 	app.objects[0].drives.append(background.DBackground("swirlybg.png", (100, 100), (2, 2), (-0.9, -0.45)))
-	app.objects[0].drives.append(background.DBackground("hills.png", (100, 100), (1.2, 1.2), (-0.7, -0.35), (False, True)))
+	app.objects[0].drives.append(background.DBackground("hills.png", (100, 100), (1.2, 1.2), (-0.7, -0.35)))
 	app.objects[1].drives.append(image.DImage("ball.png", (0.75, 0.75)))
 	app.objects[1].drives.append(camera.DCameraFollow())
 	app.objects[2].drives.append(image.DBlock(colors.red, (0.1, 5)))
