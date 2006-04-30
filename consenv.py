@@ -10,16 +10,16 @@ import pydoc
 from pygame.locals import *
 
 import app
+import background
+import camera
 import colors
 import console
-import gameobj
-import resman
-import camera
 import drive
+import gameobj
 import image
-import background
-import magnet
 import interface
+import magnet
+import resman
 from util import *
 
 class ConsDoc(pydoc.TextDoc):
@@ -27,6 +27,22 @@ class ConsDoc(pydoc.TextDoc):
 	#That doesn't work very well for the debugging console output
 	def bold(self, text):
 		return text
+
+def wset(num, expr):
+	"""Shortcut for 'app.ui.watchers[num].expr = expr'."""
+	app.ui.watchers[num].expr = expr
+	
+def wclear(num = -1):
+	"""Clears all Watchers in app.ui.watchers, or just the specified one."""
+	if num == -1:
+		for w in app.ui.watchers:
+			w.expr = None
+	else:
+		app.ui.watchers[num].expr = None
+
+def wfps(num = 0):
+	"""Sets a given watcher (#0 by default) to show the FPS."""
+	app.ui.watchers[num].expr = "app.ui.clock"
 
 def help(tgt = None):
 	if tgt == None:
