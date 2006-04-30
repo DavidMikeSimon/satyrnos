@@ -17,4 +17,4 @@ class DCameraFollow(drive.Drive):
 		self.boundlist = boundlist
 	
 	def _predraw(self, obj):
-		app.camera = obj.pos
+		app.ui.camera = obj.pos

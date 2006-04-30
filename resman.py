@@ -8,7 +8,7 @@ import app
 class Texture(object):
 	"""An OpenGL 2D texture.
 
-	If app.maxfps is None (signifying that app.disp_init() was never called), then Texture objects are empty.
+	If app.maxfps is None (signifying that app.ui_init() was never called), then Texture objects are empty.
 	
 	Data attributes:
 	glname -- The OpenGL texture name.
@@ -19,7 +19,7 @@ class Texture(object):
 
 	def __new__(cls, filename):
 		"""Creates a Texture from an image file, using pre-cached version if it exists."""
-		if (app.maxfps):
+		if (app.ui.opened):
 			if (Texture.cache.has_key(filename)):
 				return Texture.cache[filename]
 			else:

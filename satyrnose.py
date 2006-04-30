@@ -20,7 +20,7 @@ avgx1, avgy1, avgx2, avgy2 = 0, 0, 0, 0
 maxx1, maxy1, maxx2, maxy2 = 0, 0, 0, 0
 minx1, miny1, minx2, miny2 = 9999, 9999, 9999, 9999
 
-app.disp_init()
+app.ui.open()
 
 runs = 1
 for i in range(runs):
@@ -52,12 +52,12 @@ for i in range(runs):
 	#profile.run('app.run()', 'satyrprof')
 	app.run()
 	
-	x1 = app.objects[0].pos[0]
-	y1 = app.objects[0].pos[1]
+	x1 = app.objects[1].pos[0]
+	y1 = app.objects[1].pos[1]
 	x2 = app.objects[5].pos[0]
 	y2 = app.objects[5].pos[1]
 	
-	print "%8d : %.5f %.5f      %.5f %.5f     %.5f Revs" % (i, x1, y1, x2, y2, app.objects[0].ang)
+	print "%8d : %.5f %.5f      %.5f %.5f     %.5f Revs" % (i, x1, y1, x2, y2, app.objects[1].ang)
 	
 	maxx1 = max(x1, maxx1)
 	maxy1 = max(y1, maxy1)
@@ -85,4 +85,4 @@ print "MAX: %.5f %.5f   %.5f %.5f" % (maxx1, maxy1, maxx2, maxy2)
 print "AVG: %.5f %.5f   %.5f %.5f" % (avgx1, avgy1, avgx2, avgy2)
 print "MIN: %.5f %.5f   %.5f %.5f" % (minx1, miny1, minx2, miny2)
 
-app.disp_deinit()
+app.ui.close()

@@ -217,6 +217,27 @@ class OutputBox:
 		"""Scrolls down one screenful."""
 		self.scroll = max(self.scroll-self.dispsize(), 0)
 
+class Watcher(OutputBox):
+	"""Displays continually-updated information to an on-screen debugging window.
+	
+	Caller is expected to make sure that expr is non-Null before calling update().
+	
+	Data attributes:
+	expr -- Runs this expression on each call to update(), sets buffer to the result.
+	"""
+	def __init__(self, rect = None, expr = None):
+		OutputBox.__init__(self, rect)
+		self.expr = expr
+		self.bufferlen = self.dispsize()
+	
+	def update(self):
+		self.clear()
+		try:
+			self.append(self.expr + ":\n\n" + repr(eval(self.expr)))
+		except:
+			self.append("EXCEPTION")
+
+#This has to be done here to avoid circularity issues
 import consenv
 
 class Console:
@@ -233,7 +254,7 @@ class Console:
 	pseudofile -- The stdout/stderr redirection target (also sends to the real stderr).
 	hist -- The command history (more recent commands have higher indices).
 	histpos -- User's current index in the command history. If not in history, then is len(hist).
-	intercons -- The InteractiveConsole.
+	intercons -- The InteractiveConsole used to actually run the commands.
 	"""
 	
 	def __init__(self):
@@ -250,8 +271,8 @@ class Console:
 	
 	def update_size(self):
 		"""Sets the EditBox and OutputBox rectangles to match the current window size."""
-		self.edit.rect = pygame.Rect(20, app.winheight-30, app.winwidth-40, 15)
-		self.out.rect = pygame.Rect(20, 20, app.winwidth-40, app.winheight-70)
+		self.edit.rect = pygame.Rect(20, app.ui.winsize[1]-30, app.ui.winsize[0]-40, 15)
+		self.out.rect = pygame.Rect(20, 20, app.ui.winsize[0]-40, app.ui.winsize[1]-70)
 	
 	def draw(self):
 		"""Draws the console. Nothing happens if the active flag is off."""

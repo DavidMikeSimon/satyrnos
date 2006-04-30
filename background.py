@@ -40,7 +40,7 @@ class DBackground(drive.Drive):
 		
 		paraoffset = [0, 0] #For applying parallax
 		for axis in range(0, 2):
-			paraoffset[axis] = (self.parallax[axis]*(app.camera[axis]-obj.pos[axis]) + self.offset[axis])/self.tilesize[axis]
+			paraoffset[axis] = (self.parallax[axis]*(app.ui.camera[axis]-obj.pos[axis]) + self.offset[axis])/self.tilesize[axis]
 		
 		#Texture coordinates are still mathematically oriented (up-right is +/+, not down-right)
 		texbottomleft = (0 - texoffset[0] + paraoffset[0], 0 - texoffset[1] - paraoffset[1])
