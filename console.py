@@ -5,6 +5,7 @@ from OpenGL.GLUT import *
 
 import app
 import colors
+import consenv
 
 helphelp = "Interactive Python help is not available in Satyrnose. You can still use help(class) or help(module)."
 quithelp = "To close the debugging console, hit the escape key."
@@ -233,9 +234,11 @@ class Watcher(OutputBox):
 	def update(self):
 		self.clear()
 		try:
-			self.append(self.expr + ":\n\n" + repr(eval(self.expr)))
+			self.append(self.expr + ":\n\n" + repr(eval(self.expr, consenv.__dict__)))
+		except Exception, e:
+			self.append(self.expr + "\nEXCEPTION: " + e.type + " : " + e.__str__())
 		except:
-			self.append("EXCEPTION")
+			self.append(self.expr + "\nUNKNOWN EXCEPTION")
 
 #This has to be done here to avoid circularity issues
 import consenv
@@ -339,6 +342,9 @@ class Console:
 			
 			#Jump to the end of the history after every command
 			self.histpos = len(self.hist)
+			
+			#After entering in commands, scroll down to the bottom
+			self.out.jump_bottom()
 			
 			#If it's just a confused player, help them out a little
 			cleaned = cmd.lower().strip()

@@ -1,3 +1,5 @@
+from __future__ import division
+
 import pygame, os, ode, math
 
 import app

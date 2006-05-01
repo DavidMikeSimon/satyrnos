@@ -1,3 +1,4 @@
+from __future__ import division
 import sys, pygame
 from pygame.locals import *
 from OpenGL.GL import *
@@ -8,11 +9,14 @@ import console, resman, app
 class Interface:
 	"""Represents the window used to draw the game, including A/V and user input.
 	
-	You should instantiate one of these into an instance of app.App if
-	you want anything to actually appear on-screen.
+	If you want anything interactive to happen, be sure to call 'app.ui.open()'
+	before calling 'app.run()'. With the Interface opened, the game runs
+	normally and interactively. With the interface closed, Satyrnose tries
+	to arrive at a final state (after a specified number of steps) as quickly
+	as possible.
 	
 	Data attributes:
-	opened -- If True, then the display window is ready to show pretty pictures.
+	opened -- If True, then everything else in the class is ready for use.
 	winsize -- The size of the display window in pixels.
 	screen -- The PyGame screen.
 	maxfps -- The maximum frames-per-second that we will draw at.
@@ -38,7 +42,7 @@ class Interface:
 		self.winsize = (1024, 768)
 		self.maxfps = 100
 		self.pixm = self.winsize[0]/4
-		self.camera = (2, 1.5)
+		self.camera = (0, 0)
 		self.screen = None
 		self.clock = None
 		self.cons = None
@@ -127,13 +131,13 @@ class Interface:
 					elif event.key == K_e:
 						objects[1].body.addTorque((0, 0, 2))
 					elif event.key == K_r:
-						objects[6].ang += 0.1
+						objects[2].ang += 0.1
 					elif event.key == K_f:
 						objects[1].freeze()
 					elif event.key == K_z:
-						objects[6].body.addTorque((0, 0, -50))
+						objects[2].body.addTorque((0, 0, -50))
 					elif event.key == K_x:
-						objects[6].body.addTorque((0, 0, 50))
+						objects[2].body.addTorque((0, 0, 50))
 	
 	def close(self):
 		"""If display window is open, destroys all data attributes and closes the display window.

@@ -22,12 +22,6 @@ import magnet
 import resman
 from util import *
 
-class ConsDoc(pydoc.TextDoc):
-	#The regular bolder tries to replace X with X<BKSP>X
-	#That doesn't work very well for the debugging console output
-	def bold(self, text):
-		return text
-
 def wset(num, expr):
 	"""Shortcut for 'app.ui.watchers[num].expr = expr'."""
 	app.ui.watchers[num].expr = expr
@@ -43,6 +37,12 @@ def wclear(num = -1):
 def wfps(num = 0):
 	"""Sets a given watcher (#0 by default) to show the FPS."""
 	app.ui.watchers[num].expr = "app.ui.clock"
+
+class ConsDoc(pydoc.TextDoc):
+	#The regular bolder tries to replace X with X<BKSP>X
+	#That doesn't work very well for the debugging console output
+	def bold(self, text):
+		return text
 
 def help(tgt = None):
 	if tgt == None:

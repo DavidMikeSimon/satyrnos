@@ -9,11 +9,9 @@ from OpenGL.GL import *
 class GameObj(object):
 	"""The base class for in-game objects of all kinds.
 
-	This base class can also be used for objects which are not drawn, but which
-	still have physical effects through drives and/or ODE. You'll have
-	to use a derivative of GameObj if you actually want to see anything, but
-	the actual simulation behavior of game objects is determined by ODE settings
-	and by drives, both of which are part of this base object.
+	Behavior, both in terms of affecting game state and drawing stuff
+	to the screen or playing sounds, is determined entirely by
+	drives and/or the ODE body and geom.
 
 	Data attributes:
 	pos -- 2-tuple of the absolute location of the center of the object, in meters.

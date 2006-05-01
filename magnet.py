@@ -1,3 +1,4 @@
+from __future__ import division
 import app, math, util, drive
 
 def mag_force(source, target, tgtmass, pow, loss = 0, grav = False):

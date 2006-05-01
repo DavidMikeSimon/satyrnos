@@ -6,7 +6,7 @@ Bugs:
 - Why does the camera lag behind?
 
 Short term features:
-- Create Display class, make App into a real class
+- Camera that anticipates velocity
 - Debugging controller (executes arbitrary expression)
 - Magnets also move magnet towards pulled object
 - Antialiasing

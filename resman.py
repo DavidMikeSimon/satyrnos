@@ -8,7 +8,7 @@ import app
 class Texture(object):
 	"""An OpenGL 2D texture.
 
-	If app.maxfps is None (signifying that app.ui_init() was never called), then Texture objects are empty.
+	If app.ui.opened is False (signifying that app.ui.open() was never called), then Texture objects are empty.
 	
 	Data attributes:
 	glname -- The OpenGL texture name.
