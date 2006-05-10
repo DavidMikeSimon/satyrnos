@@ -28,6 +28,12 @@ def tupa(a, b):
 
 	return (a[0]+b[0], a[1]+b[1])
 
+def getang(a, b):
+	"""Returns the angle from point a to point b in clockwise revolutions.
+	
+	If b is directly to the right of a, then the angle is zero."""
+	return math.atan2(b[1]-a[1], b[0]-a[0])/(2*math.pi)
+
 def rotp(pt, cen, ang):
 	"""Rotates a point around a center-point a given number of cw revolutions."""
 
@@ -35,7 +41,7 @@ def rotp(pt, cen, ang):
 		return pt
 	a = rev2rad(ang) #Convert to ccw radians
 	h = dist(cen, pt) #Radius of circle
-	b = -math.atan2(pt[1]-cen[1], pt[0]-cen[0]) #Previous angle between the two (neg to make it ccw)
+	b = rev2rad(getang(cen, pt))
 	return (h*math.cos(a+b)+cen[0], -1*h*math.sin(a+b)+cen[1])
 
 def sphere_body(density, radius):

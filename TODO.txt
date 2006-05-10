@@ -7,8 +7,7 @@ Bugs:
 
 Short term features:
 - Make console 'help()' work better
-- Camera that anticipates velocity
-- Camera implemented with ODE body
+- Camera that understands teleports (DCameraPan w/ return)
 - Magnets also move magnet towards pulled object
 - Antialiasing
 - Options dialog, saving options

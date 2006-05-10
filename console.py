@@ -236,7 +236,7 @@ class Watcher(OutputBox):
 		try:
 			self.append(self.expr + ":\n\n" + repr(eval(self.expr, consenv.__dict__)))
 		except Exception, e:
-			self.append(self.expr + "\nEXCEPTION: " + e.type + " : " + e.__str__())
+			self.append(self.expr + "\nEXCEPTION: " + repr(e) + " : " + e.__str__())
 		except:
 			self.append(self.expr + "\nUNKNOWN EXCEPTION")
 

@@ -18,6 +18,7 @@ class Interface:
 	Data attributes:
 	opened -- If True, then everything else in the class is ready for use.
 	winsize -- The size of the display window in pixels.
+	winmeters -- The size of the display window in meters.
 	screen -- The PyGame screen.
 	maxfps -- The maximum frames-per-second that we will draw at.
 	          There's no point in setting this higher than 100, since
@@ -40,6 +41,7 @@ class Interface:
 		
 		self.opened = False
 		self.winsize = (1024, 768)
+		self.winmeters = (4, 3) #Fixed
 		self.maxfps = 100
 		self.pixm = self.winsize[0]/4
 		self.camera = (0, 0)
@@ -84,13 +86,19 @@ class Interface:
 		glClear(GL_COLOR_BUFFER_BIT)
 		
 		glPushMatrix()
-		glTranslatef(self.winsize[0]/2 - self.camera[0]*self.pixm, self.winsize[1]/2 - self.camera[1]*self.pixm, 0)
 		glScalef(self.pixm, self.pixm, 0) #OpenGL units are now game meters, not pixels
 		
+		#Mostly, this is used for setting the camera's position
 		for o in objects:
 			o.predraw()
+			
+		#Translate so that camera position is centered
+		glTranslatef(self.winsize[0]/(2*self.pixm) - self.camera[0], self.winsize[1]/(2*self.pixm) - self.camera[1], 0)
+		
+		#This actually draws the objects
 		for o in objects:
 			o.draw()
+		
 		glPopMatrix()
 		
 		for w in self.watchers:
@@ -134,10 +142,8 @@ class Interface:
 						objects[2].ang += 0.1
 					elif event.key == K_f:
 						objects[1].freeze()
-					elif event.key == K_z:
-						objects[2].body.addTorque((0, 0, -50))
-					elif event.key == K_x:
-						objects[2].body.addTorque((0, 0, 50))
+					elif event.key == K_t:
+						objects[1].pos = (2.5, 1)
 	
 	def close(self):
 		"""If display window is open, destroys all data attributes and closes the display window.
@@ -164,6 +170,9 @@ class Interface:
 			sys.stdout = sys.__stdout__
 	
 	def __del__(self):
-		self.close()
+		try:
+			self.close()
+		except:
+			print "Exited with error."
 
 	
