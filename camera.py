@@ -43,11 +43,11 @@ class DCameraLead(drive.Drive):
 	"""Drive that changes app.camera to show where the object's going, without going outside bounds.
 	
 	DCameraLead looks ahead of the object based on its velocity, which is calculated just by
-	comparing snapshots (so, it's not neccessary that the object have an ODE body). It moves
-	forward in "clicks", pre-notched lengths ahead of the object, and scroll smoothly
-	between clicks. The reason to have notched positions, rather than just keeping
-	a distance ahead of the object proportionate to its velocity, is that doing it
-	the latter way creates a weird sensation of the camera pulling the object around.
+	comparing snapshots (so, it's not neccessary that the object have an ODE body). When
+	the object's velocity is higher than a certain amount, the camera pans forward
+	to show where the object is going. The amount of desired pan is fixed (either no pan, or full pan
+	once velocity is high enough), but the camera approaches the desired pan at a steady speed so
+	that it seems smoother.
 	
 	Don't have more than one camera drive active at once.
 	
@@ -55,26 +55,21 @@ class DCameraLead(drive.Drive):
 	bounds -- A rectangle, specified as ((left, top), (width, height)), which the camera can never
 		move outside of. If it's None, camera can go anywhere. Bounds must be at least as big
 		as the screen size, or _predraw will throw an InvalidBoundsError.
-	vel_per_click -- How many m/s of object speed past min_vel_for_offset it takes to move
-		one click.
-	click_length -- The distance between the clicks. The actual offset moves to a
-		position only when the object is going fast enough to push the potential
-		desired offset past a click.
-	speed -- How quickly, in meters per second, the camera moves towards velocity offset.
-	max_offset_scr -- How much (0.0-1.0) of the screen size we can offset to at a maximum.
-		This prevents the object from being offseted entirely off the screen.
+	min_vel -- How many m/s of object speed required for the camera to want to pan ahead.
+	lead_length -- How far the camera wants to pan ahead.
+	speed -- How quickly, in meters per second, the camera moves towards desired offset.
 	"""
 	
-	def __init__(self, bounds = None, vel_per_click = 1.5, click_length = 0.5, speed = 1, max_offset_scr = 0.36):
+	def __init__(self, bounds = None, min_vel = 0.5, lead_length = 0.75, speed = 1):
 		super(DCameraLead, self).__init__(True, False)
 		self.bounds = bounds
-		self.vel_per_click = vel_per_click
-		self.click_length = click_length
+		self.min_vel = min_vel
+		self.lead_length = lead_length
 		self.speed = speed
-		self.max_offset_scr = max_offset_scr
 		self._cur_offset = [0, 0] #The camera's offset as of now
 		self._last_obj_pos = (0, 0) #The object's last position (for tracking its velocity)
 		self._inited = False #So we know that _obj_pos is invalid the first run of _predraw
+		self._DEBUGFILE = open("debugout", "w")
 	
 	def _predraw(self, obj):
 		time = app.ui.clock.get_time()/1000
@@ -82,26 +77,30 @@ class DCameraLead(drive.Drive):
 			obj_vel = 0
 			if self._inited == True:
 				obj_vel = (obj.pos[axis] - self._last_obj_pos[axis])/time
+
+			wanted_offset = 0
+			if obj_vel > self.min_vel:
+                            wanted_offset = self.lead_length
+                        elif -obj_vel > self.min_vel:
+                            wanted_offset = -self.lead_length
+
+                        if (axis == 0):
+                            app.calcvel = obj_vel
+                        #    self._DEBUGFILE.write("OBJ_VEL %s   --  TIME %s  --  " % (obj_vel, time)),
+                        #    if wanted_offset != 0:
+                        #        self._DEBUGFILE.write("Yes\r\n")
+                        #    else:
+                        #        self._DEBUGFILE.write("No\r\n")
+                                
 			
-			clicked_offset = 0 #The real desired offset, including effects of self.click_length
-			wanted_clicks = obj_vel/self.vel_per_click
-			
-			#Round down to the nearest click that doesn't offset too far
-			max_clicks = (self.max_offset_scr*app.ui.winmeters[axis])/self.click_length
-			rounded_clicks = max_clicks
-			if (wanted_clicks > 0): rounded_clicks = math.floor(wanted_clicks)
-			else: rounded_clicks = math.ceil(wanted_clicks)
-			clicked_offset = max(-max_clicks, min(max_clicks, rounded_clicks))*self.click_length
-			
-			if abs(self._cur_offset[axis] - clicked_offset) < self.speed*time:
-				self._cur_offset[axis] = clicked_offset
-			elif (self._cur_offset[axis] < clicked_offset):
+			if abs(self._cur_offset[axis] - wanted_offset) < self.speed*time:
+				self._cur_offset[axis] = wanted_offset
+			elif (self._cur_offset[axis] < wanted_offset):
 				self._cur_offset[axis] += self.speed*time
 			else:
 				self._cur_offset[axis] -= self.speed*time
 			
-		if self._inited == False:
-			self._inited = True
+		if self._inited == False: self._inited = True
 		self._last_obj_pos = obj.pos
 		
 		subdrive = DCameraDirect(self.bounds, self._cur_offset)
