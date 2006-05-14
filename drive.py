@@ -44,7 +44,7 @@ class Drive(object):
 	
 	def _step(self, obj):
 		pass
-	
+
 class DDebug(Drive):
 	"""Drive that executes arbitrary expressions.
 	

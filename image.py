@@ -1,6 +1,7 @@
-import app, util, drive, colors, resman
-
 from OpenGL.GL import *
+
+import app, util, drive, colors, resman
+from geometry import *
 
 class DImage(drive.Drive):
 	"""Drive that draws a static image.
@@ -17,24 +18,18 @@ class DImage(drive.Drive):
 		self.size = size
 		
 	def _draw(self, obj):
-		halfsize = util.tupm(self.size, 0.5)
-		topleft = (-halfsize[0], -halfsize[1])
-		topright = (halfsize[0], -halfsize[1])
-		bottomleft = (-halfsize[0], halfsize[1])
-		bottomright = (halfsize[0], halfsize[1])
-		
 		glEnable(GL_TEXTURE_2D)
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE)
 		glBindTexture(GL_TEXTURE_2D, self.tex.glname)
 		glBegin(GL_QUADS)
 		glTexCoord2f(0.0, 1.0)
-		glVertex2fv(topleft)
+		glVertex2fv(self.size.tl())
 		glTexCoord2f(1.0, 1.0)
-		glVertex2fv(topright)
+		glVertex2fv(self.size.tr())
 		glTexCoord2f(1.0, 0.0)
-		glVertex2fv(bottomright)
+		glVertex2fv(self.size.br())
 		glTexCoord2f(0.0, 0.0)
-		glVertex2fv(bottomleft)
+		glVertex2fv(self.size.bl())
 		glEnd()
 		glDisable(GL_TEXTURE_2D)
 
@@ -54,11 +49,10 @@ class DWireBlock(drive.Drive):
 		self.size = size
 		
 	def _draw(self, obj):
-		halfsize = util.tupm(self.size, 0.5)
-		topleft = (-halfsize[0], -halfsize[1])
-		topright = (halfsize[0], -halfsize[1])
-		bottomleft = (-halfsize[0], halfsize[1])
-		bottomright = (halfsize[0], halfsize[1])
+		topleft = self.size.tl()
+		topright = self.size.tr()
+		bottomleft = self.size.bl()
+		bottomright = self.size.br()
 		glColor3fv(self.color)
 		glBegin(GL_LINES)
 		for pair in (
@@ -88,15 +82,10 @@ class DBlock(drive.Drive):
 		self.size = size
 		
 	def _draw(self, obj):
-		halfsize = util.tupm(self.size, 0.5)
-		topleft = (-halfsize[0], -halfsize[1])
-		topright = (halfsize[0], -halfsize[1])
-		bottomleft = (-halfsize[0], halfsize[1])
-		bottomright = (halfsize[0], halfsize[1])
 		glColor3fv(self.color)
 		glBegin(GL_QUADS)
-		glVertex2fv(topleft)
-		glVertex2fv(topright)
-		glVertex2fv(bottomright)
-		glVertex2fv(bottomleft)
+		glVertex2fv(self.size.tl())
+		glVertex2fv(self.size.tr())
+		glVertex2fv(self.size.br())
+		glVertex2fv(self.size.bl())
 		glEnd()

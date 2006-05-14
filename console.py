@@ -111,9 +111,11 @@ class OutputBox:
 	Data attributes:
 	scroll -- How far we have scrolled up (0 means we're at bottom, 10 means bottom ten lines aren't visible).
 	buffer -- The output to the console. A list of strings, each of which is one line, without the newline.
-	        If the last thing to go into buffer ended with a newline, then the last element of buffer will be an empty string.
+		If the last thing to go into buffer ended with a newline, then the last element of buffer will be an empty string.
 	bufferlen -- No more than this many lines will be saved.
 	rect -- The rectangle defining the box's size and position in pixels (draw size is a 5px more on each side).
+		NOTE: This is a pygame Rect, not a satyrnose Rect! This is because the units for OutputBox
+		are pixels, not game meters.
 	"""
 	
 	def __init__(self, rect = None):

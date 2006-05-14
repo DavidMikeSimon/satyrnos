@@ -3,6 +3,7 @@ import ode
 
 import app
 import util
+from geometry import *
 
 from OpenGL.GL import *
 
@@ -42,7 +43,7 @@ class GameObj(object):
 	
 	"""
 	
-	def __init__(self, pos = (0.0, 0.0), body = None, geom = None, drives = util.TrackerList()):
+	def __init__(self, pos = Point(0.0, 0.0), body = None, geom = None, drives = util.TrackerList()):
 		"""Creates a GameObj. Pos given overrides the position of body and/or geom.
 		
 		If the drives argument passed in is not a TrackerList, then it is converted to
@@ -60,8 +61,7 @@ class GameObj(object):
 		else:
 			self.drives = util.TrackerList(drives)
 	
-	def _get_geom(self):
-		return self._geom
+	def _get_geom(self): return self._geom
 	
 	def _set_geom(self, geom):
 		#Remove and disassociate existing geom if any
@@ -78,8 +78,7 @@ class GameObj(object):
 				self._set_ode_ang(self._body)
 				self._geom.setBody(self._body)
 	
-	def _get_body(self):
-		return self._body
+	def _get_body(self): return self._body
 	
 	def _set_body(self, body):
 		#Remove and disassociate existing body if any
@@ -97,8 +96,7 @@ class GameObj(object):
 		if self._geom != None:
 			self._geom.setBody(self._body)
 	
-	def _get_pos(self):
-		return self._pos
+	def _get_pos(self): return self._pos
 	
 	def _set_pos(self, pos):	
 		self._pos = pos
@@ -107,8 +105,7 @@ class GameObj(object):
 		if self._body != None: self._set_ode_pos(self._body)
 		elif self._geom != None: self._set_ode_pos(self._geom)
 	
-	def _get_ang(self):
-		return self._ang
+	def _get_ang(self): return self._ang
 	
 	def _set_ang(self, ang):
 		#Wrap to [0-1) revolutions
@@ -122,7 +119,8 @@ class GameObj(object):
 		"""Sets position and rotation from the given ODE object (either a body or a geom)."""
 		
 		#Ignore the z-axis
-		self._pos = odething.getPosition()[0:2]
+		odepos = odething.getPosition()
+		self._pos = Point(odepos[0], odepos[1])
 		
 		#Convert ccw radians to cw revolutions
 		rot = odething.getRotation()

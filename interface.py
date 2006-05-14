@@ -5,6 +5,7 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 
 import console, resman, app
+from geometry import *
 
 class Interface:
 	"""Represents the window used to draw the game, including A/V and user input.
@@ -21,11 +22,16 @@ class Interface:
 	winmeters -- The size of the display window in meters.
 	screen -- The PyGame screen.
 	maxfps -- The maximum frames-per-second that we will draw at.
-	          There's no point in setting this higher than 100, since
-	          the simulation only runs at 100hz.
+		There's no point in setting this higher than 100, since
+		the simulation only runs at 100hz.
 	clock -- An instance of pygame.time.Clock() used for timing.
+		Do not call get_time() on this, use the 'msecs' variable instead.
+	msecs -- The reuslt of the last call to clock.get_time(). Use this
+		instead of calling clock.get_time() from a drive's draw() or
+		predraw(), since that way time spent drawing or predrawing
+		doesn't screw up calculations.
 	pixm -- Number of screen pixels per game meter.
-	        We always try and go for a 4x3 meter display.
+		We always try and go for a 4x3 meter display.
 	cons -- An instance of console.Console used for in-game debugging.
 	watchers -- A sequence of console.Watchers used for in-game debugging.
 	camera -- Where, in game meters, the view is centered.
@@ -40,11 +46,11 @@ class Interface:
 		data attributes shouldn't be accessed."""
 		
 		self.opened = False
-		self.winsize = (1024, 768)
-		self.winmeters = (4, 3) #Fixed
+		self.winsize = Size(1024, 768)
+		self.winmeters = Size(4, 3) #Shouldn't ever be changed
 		self.maxfps = 100
 		self.pixm = self.winsize[0]/4
-		self.camera = (0, 0)
+		self.camera = Point()
 		self.screen = None
 		self.clock = None
 		self.cons = None
@@ -82,7 +88,12 @@ class Interface:
 			self.watchers.append(console.Watcher(pygame.Rect(3*self.winsize[0]/4 - 20, 2*self.winsize[1]/3-30, self.winsize[0]/4, self.winsize[1]/3-20)))
 		
 	def draw_frame(self, objects):
-		"""Draws one frame based on the list of objects passed."""
+		"""Draws one frame based on the list of objects passed.
+		
+		This also resets the msecs data attribute."""
+		
+		self.msecs = self.clock.get_time()
+		
 		glClear(GL_COLOR_BUFFER_BIT)
 		
 		glPushMatrix()
@@ -91,7 +102,7 @@ class Interface:
 		#Mostly, this is used for setting the camera's position
 		for o in objects:
 			o.predraw()
-			
+		
 		#Translate so that camera position is centered
 		glTranslatef(self.winsize[0]/(2*self.pixm) - self.camera[0], self.winsize[1]/(2*self.pixm) - self.camera[1], 0)
 		

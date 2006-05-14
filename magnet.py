@@ -1,5 +1,6 @@
 from __future__ import division
 import app, math, util, drive
+from geometry import *
 
 def mag_force(source, target, tgtmass, pow, loss = 0, grav = False):
 	"""Returns a 3-tuple, appropriate for passing to body.addForce(), for a magnetic/gravitational force.
@@ -12,7 +13,7 @@ def mag_force(source, target, tgtmass, pow, loss = 0, grav = False):
 	
 	#If we have loss, determine the actual amount of force applied
 	force = pow
-	d = util.dist(source, target)
+	d = source.dist_to(target)
 	if loss != 0:
 		diff = d*loss
 		if pow > 0:
@@ -102,27 +103,28 @@ class DLineMagnet(drive.Drive):
 				continue
 
 			#Find the nearest point on the line to the object
-			right_end = util.rotp(util.tupa(magobj.pos, self.end), magobj.pos, magobj.ang)
-			left_end = util.rotp(util.tupa(magobj.pos, util.tupm(self.end, -1)), magobj.pos, magobj.ang)
-			nearest = util.nearest_on_line((left_end, right_end), o.pos)
+			magline = Line(
+				(magobj.pos + self.end).rot(magobj.pos, magobj.ang),
+				(magobj.pos - self.end).rot(magobj.pos, magobj.ang))
+			nearest = magline.nearest_pt_to(o.pos)
 			
 			#Ignore objects outside range, if there's a range set
-			if self.rad > 0 and self.rad < util.dist(nearest, o.pos):
+			if self.rad > 0 and self.rad < nearest.dist_to(o.pos):
 				continue
 			
 			o.body.addForce(mag_force(nearest, o.pos, o.body.getMass().mass, self.pow, self.loss, self.gravity))
 
 	
 
-class DBoxMagnet(drive.Drive):
-	"""Drive like DMagnet, only the source is not a point but a box.
+class DRectMagnet(drive.Drive):
+	"""Drive like DMagnet, only the source is not a point but a rectangle.
 
-	Objects are affected as though by a DMagnet point at the nearest part of the box
+	Objects are affected as though by a DMagnet point at the nearest part of the rect
 	to the object.
 	
 	Data attributes:
 	pow -- The amount of force applied per simstep. If negative, pulls instead of pushing.
-	size -- The size of the magnet box, centered at the magnet object's pos.
+	size -- The size of the magnet rect, centered at the magnet object's pos.
 	rad -- The radius of the effect in meters. If non-positive, unlimited radius.
 	loss -- The amount of force lost per meter distance from the object.
 	    This just brings 'pow' that much closer to zero depending on distance.
@@ -131,7 +133,7 @@ class DBoxMagnet(drive.Drive):
 	"""
 	
 	def __init__(self, pow, size, rad = 0, loss = 0, gravity = False):
-		super(DBoxMagnet, self).__init__(False, True)
+		super(DRectMagnet, self).__init__(False, True)
 		self.pow = pow
 		self.size = size
 		self.rad = rad
@@ -140,6 +142,7 @@ class DBoxMagnet(drive.Drive):
 	
 	def _step(self, magobj):
 		#For every object excluding the actual pulling object, check if we're affecting it
+		mag_rect = Rect(magobj.pos, self.size, magobj.ang)
 		for o in app.objects:
 			if o == magobj:
 				continue
@@ -149,8 +152,8 @@ class DBoxMagnet(drive.Drive):
 				continue
 			
 			#Ignore objects outside range, if there's a range set
-			nearest = util.nearest_in_box(magobj.pos, self.size, magobj.ang, o.pos)
-			if self.rad > 0 and self.rad < util.dist(nearest, o.pos):
+			nearest = mag_rect.nearest_pt_to(o.pos)
+			if self.rad > 0 and self.rad < nearest.dist_to(o.pos):
 				continue
 			
 			o.body.addForce(mag_force(nearest, o.pos, o.body.getMass().mass, self.pow, self.loss, self.gravity))

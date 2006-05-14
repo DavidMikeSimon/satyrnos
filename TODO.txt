@@ -4,8 +4,14 @@ Bugs:
 - GameObj._setBody needs to destroy old body
 - Why doesn't camera centering work perfectly?
 - Put the division fix into all modules
+- DCameraLead gets shakey when framerate dips (try with profiling to see)
 
 Short term features:
+- DCameraLead has right idea for offset type, but needs more smarts about when to offset.
+  See how awesomely "Yoshi's Island" handles this, and Super Mario World for simpler example.
+  Possible idea: require that velocity be above min a certain amount of time before starting movement.
+- Maybe do DCameraLead movement similar to the way the space-division camera worked
+  (only capped at a certain velocity, to prevent it from being way too fast at the beginning).
 - Make console 'help()' work better
 - Camera that understands teleports (DCameraPan w/ return)
 - Magnets also move magnet towards pulled object

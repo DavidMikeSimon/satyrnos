@@ -1,7 +1,8 @@
-import app, colors, resman, util, drive
-
 import math
 from OpenGL.GL import *
+
+import app, colors, resman, util, drive
+from geometry import *
 
 class DBackground(drive.Drive):
 	"""Drive that draws a repeating background image.
@@ -13,12 +14,12 @@ class DBackground(drive.Drive):
 	tex -- A resman.Texture instance to use as the tile.
 	size -- In meters, the size of the region centered at the object's position over which to tile the image.
 	tilesize -- The size of one tile in meters.
-	parallax -- 2-tuple of amount to parallax-nudge in each axis (in meters per meters of camera movement).
+	parallax -- Point with offset of amount to parallax-nudge in each axis (in meters per meters of camera movement).
 	clamp -- 2-tuple of booleans, clamps the respective axis with GL instead of repeating.
 	offset -- Like parallax, but simply adds the value in meters directly; camera is not involved.
 	"""
 	
-	def __init__(self, imgfile, size, tilesize, parallax = (0.0, 0.0), clamp = (False, False), offset = (0.0, 0.0)):
+	def __init__(self, imgfile, size, tilesize, parallax = Point(), clamp = (False, False), offset = Point()):
 		"""Creates an DBackground from the given image file. Size given is in meters."""
 		super(DBackground, self).__init__(True, False)
 		self.tex = resman.Texture(imgfile)
@@ -29,24 +30,17 @@ class DBackground(drive.Drive):
 		self.clamp = clamp
 	
 	def _draw(self, obj):
-		topleft = (-self.size[0]/2, -self.size[1]/2)
-		topright = (self.size[0]/2, -self.size[1]/2)
-		bottomleft = (-self.size[0]/2, self.size[1]/2)
-		bottomright = (self.size[0]/2, self.size[1]/2)
+		#For correctly sizing the tile within the polygon.
+		#Since the operation only involves Sizes, we end up with a Size at the end.
+		#However, we can do arithmetic between that and a Point.
+		#So we still treat this as an offset, though Size isn't really for that.
+		texoffset = (self.size/self.tilesize - 1)/2
 		
-		texoffset = [0, 0] #For correctly sizing the tile within the polygon
-		for axis in range(0, 2):
-			texoffset[axis] = (self.size[axis]/self.tilesize[axis] - 1)/2
+		#For applying parallax
+		paraoffset = (self.parallax*(app.ui.camera-obj.pos)-self.offset)/self.tilesize
 		
-		paraoffset = [0, 0] #For applying parallax
-		for axis in range(0, 2):
-			paraoffset[axis] = (self.parallax[axis]*(app.ui.camera[axis]-obj.pos[axis]) - self.offset[axis])/self.tilesize[axis]
-		
-		#Texture coordinates are still mathematically oriented (up-right is +/+, not down-right)
-		texbottomleft = (0 - texoffset[0] + paraoffset[0], 0 - texoffset[1] - paraoffset[1])
-		texbottomright = (1 + texoffset[0] + paraoffset[0], 0 - texoffset[1] - paraoffset[1])
-		textopleft = (0 - texoffset[0] + paraoffset[0], 1 + texoffset[1] - paraoffset[1])
-		textopright = (1 + texoffset[0] + paraoffset[0], 1 + texoffset[1] - paraoffset[1])
+		#In OpenGL, y-axis is flipped
+		paraoffset[1] = -paraoffset[1]
 		
 		glEnable(GL_TEXTURE_2D)
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE)
@@ -64,14 +58,19 @@ class DBackground(drive.Drive):
 		else:
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
 		
+		texbottomleft = Point(0 - texoffset[0], 0 - texoffset[1])
+		texbottomright = Point(1 + texoffset[0], 0 - texoffset[1])
+		textopleft = Point(0 - texoffset[0], 1 + texoffset[1])
+		textopright = Point(1 + texoffset[0], 1 + texoffset[1])
+		
 		glBegin(GL_QUADS)
-		glTexCoord2fv(textopleft)
-		glVertex2fv(topleft)
-		glTexCoord2fv(textopright)
-		glVertex2fv(topright)
-		glTexCoord2fv(texbottomright)
-		glVertex2fv(bottomright)
-		glTexCoord2fv(texbottomleft)
-		glVertex2fv(bottomleft)
+		glTexCoord2fv(textopleft + paraoffset)
+		glVertex2fv(self.size.tl())
+		glTexCoord2fv(textopright + paraoffset)
+		glVertex2fv(self.size.tr())
+		glTexCoord2fv(texbottomright + paraoffset)
+		glVertex2fv(self.size.br())
+		glTexCoord2fv(texbottomleft + paraoffset)
+		glVertex2fv(self.size.bl())
 		glEnd()
 		glDisable(GL_TEXTURE_2D)
