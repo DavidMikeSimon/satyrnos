@@ -33,6 +33,71 @@ class DImage(drive.Drive):
 		glEnd()
 		glDisable(GL_TEXTURE_2D)
 
+class DTiledImage(drive.Drive):
+	"""Drive that draws an image tiled over an area.
+	
+	Data attributes:
+	tex -- A resman.Texture instance to use as the tile.
+	size -- In meters, the size of the region centered at the object's position over which to tile the image.
+	tilesize -- The size of one tile in meters.
+	clamp -- 2-tuple of booleans, clamps the respective axis with GL instead of repeating.
+	offset -- Moves the tiled pattern around within the drawing box.
+	"""
+	
+	def __init__(self, imgfile, size, tilesize, clamp = (False, False), offset = Point()):
+		"""Creates an DBackground from the given image file. Size given is in meters."""
+		super(DTiledImage, self).__init__(True, False)
+		self.tex = resman.Texture(imgfile)
+		self.size = size
+		self.tilesize = tilesize
+		self.clamp = clamp
+		self.offset = offset
+	
+	def _draw(self, obj):
+		#For correctly sizing the tile within the polygon.
+		#Since the operation only involves Sizes, we end up with a Size at the end.
+		#However, we can do arithmetic between that and a Point.
+		#So we still treat this as an offset, though Size isn't really for that.
+		texoffset = (self.size/self.tilesize - 1)/2
+		
+		#Convert to units that are tile-size, rather than meters. Negative for translation.
+		tile_offset = (-self.offset)/self.tilesize
+		
+		#In OpenGL, y-axis is flipped
+		tile_offset[1] = -tile_offset[1]
+		
+		glEnable(GL_TEXTURE_2D)
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE)
+		glBindTexture(GL_TEXTURE_2D, self.tex.glname)
+		
+		#0x812F is GL_CLAMP_TO_EDGE, which seems to be missing from PyOpenGL
+		
+		if (self.clamp[0]):
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, 0x812F)
+		else:
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+		
+		if (self.clamp[1]):
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, 0x812F)
+		else:
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+		
+		texbottomleft = Point(0 - texoffset[0], 0 - texoffset[1])
+		texbottomright = Point(1 + texoffset[0], 0 - texoffset[1])
+		textopleft = Point(0 - texoffset[0], 1 + texoffset[1])
+		textopright = Point(1 + texoffset[0], 1 + texoffset[1])
+		
+		glBegin(GL_QUADS)
+		glTexCoord2fv(textopleft + tile_offset)
+		glVertex2fv(self.size.tl())
+		glTexCoord2fv(textopright + tile_offset)
+		glVertex2fv(self.size.tr())
+		glTexCoord2fv(texbottomright + tile_offset)
+		glVertex2fv(self.size.br())
+		glTexCoord2fv(texbottomleft + tile_offset)
+		glVertex2fv(self.size.bl())
+		glEnd()
+		glDisable(GL_TEXTURE_2D)
 
 class DWireBlock(drive.Drive):
 	"""Drive that draws a wire-frame block (borders and diagonals).

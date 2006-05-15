@@ -54,6 +54,7 @@ class Interface:
 		self.screen = None
 		self.clock = None
 		self.cons = None
+		self.msecs = 0
 		self.watchers = []
 	
 	def open(self):
@@ -154,7 +155,7 @@ class Interface:
 					elif event.key == K_f:
 						objects[1].freeze()
 					elif event.key == K_t:
-						objects[1].pos = (2.5, 1)
+						objects[1].pos = Point(2.5, 1)
 	
 	def close(self):
 		"""If display window is open, destroys all data attributes and closes the display window.
@@ -175,6 +176,7 @@ class Interface:
 			self.screen = None
 			self.clock = None
 			self.cons = None
+			self.msecs = 0
 			self.watchers = []
 			
 			sys.stderr = sys.__stderr__

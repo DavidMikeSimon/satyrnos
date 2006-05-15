@@ -174,6 +174,9 @@ class Size(_CoordLike, object):
 	
 	Units are in game meters.
 	
+	The corner methods (tl, tr, bl, br) return the corner positions of a rectangle
+	with this size centered at the origin.
+	
 	Data attributes:
 	w, h -- The width and height (mean the same as x[0] and x[1] respectively).
 	"""

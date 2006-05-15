@@ -43,19 +43,19 @@ class GameObj(object):
 	
 	"""
 	
-	def __init__(self, pos = Point(0.0, 0.0), body = None, geom = None, drives = util.TrackerList()):
+	def __init__(self, pos = Point(0.0, 0.0), ang = 0, body = None, geom = None, drives = util.TrackerList()):
 		"""Creates a GameObj. Pos given overrides the position of body and/or geom.
 		
 		If the drives argument passed in is not a TrackerList, then it is converted to
 		one for you.
 		"""
-		self._ang = 0.0 #A reasonable default (assume whatever original orientation is to be 0.0)
 		self._body = None
 		self._geom = None
 		self.body = body #This calls the smart setter, which loads ang
 		self.geom = geom #This also calls smart setter, which associates if possible (and loads ang again, eh)
-		self.sync_ode() #Fetch the angle and position from ODE (though we're about to override the position)
+		self.sync_ode() #Fetch the angle and position from ODE (though we're about to override them)
 		self.pos = pos #Overwrite ODE position with the passed-in position
+		self.ang = ang #Overwrite ODE angle too
 		if not isinstance(drives, util.TrackerList):
 			self.drives = drives
 		else:

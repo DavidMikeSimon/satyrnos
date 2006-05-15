@@ -17,6 +17,7 @@ class DCameraDirect(drive.Drive):
 	"""
 	
 	def __init__(self, bounds = None, offset = Point(0, 0)):
+		super(DCameraDirect, self).__init__(True, False)
 		self.bounds = bounds
 		self.offset = offset
 	
