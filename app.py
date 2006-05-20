@@ -1,10 +1,11 @@
 import ode, sys
 
-import util, interface
+import collision, util, interface
 
 #The ODE simulation
 odeworld = None
-odespace = None
+static_space = None
+dyn_space = None
 
 #All the various game objects in a LayeredList (init() prepares this to have objects shoved in it)
 objects = None
@@ -22,55 +23,60 @@ def sim_init():
 	You must call this before calling run().
 
 	After calling this, app.objects will be a util.LayeredList(). Within,
-	create a bunch of TrackerLists, one for each drawing layer. Within those, put
-	GameObjs. You can create multiple levels of LayeredLists if you wish, but
-	the "leaf" lists should always be TrackerLists of GameObjs.
+	create 6 lists, all of which are either TrackerLists or LayeredLists.
+	LayeredLists should always contain either more LayeredLists and/or TrackerLists,
+	and TrackerLists should contain only GameObjs. This way, you can make everything
+	as deep or shallow as you like, but the recursive behavior of LayeredList.append()
+	will make sure that GameObjs that are created and stuff in some top list arrive
+	at the right place.
+	
+	The top-level layers of objects should be as follows:
+	0 - Non-colliding background imagery, and general non-colliding GameObjs, without geoms
+	1 - Static objects (walls, buttons affixed to the floor, etc) in space "static_space"
+	2 - Non-player objects w/ physics (pushable blocks, enemies, etc) in space "dyn_space"
+	3 - Player objects (there should really only be one of these) in space "dyn_space"
+	4 - Foreground objects (dust particles, etc) in space "dyn_space" or without geoms
+	5 - Non-colliding foreground imagery (close-up tree leaves, fog, etc), without geoms
+	This way, drives can make reasonable guesses about where to append() newly created GameObjs.
+	
+	Objects in static_space do not collide with one another. Objects in dyn_space collide
+	with those in static_space, as well as with each other.
 	"""
 	
-	global odeworld, odespace, objects
+	global odeworld, static_space, dyn_space, objects
 	odeworld = ode.World()
 	odeworld.setQuickStepNumIterations(10)
-	odeworld.setERP(0.1)
-	odespace = ode.HashSpace()
+	static_space = ode.HashSpace()
+	dyn_space = ode.HashSpace()
 	objects = util.LayeredList()
 
 def sim_deinit():
 	"""Deinitializes the camera and simulation, including ODE.
-
+	
 	You can call this and then call sim_init() again to forcibly clear the game state.
 	Other than that, you don't need to call this.
 	"""
 
-	global odeworld, odespace, objects
+	global odeworld, static_space, dyn_space, objects
 	odeworld = None
-	odespace = None
+	static_space = None
+	dyn_space = None
 	objects = None
 	ode.CloseODE()
 
 def _collision(contactgroup, geom1, geom2):
 	"""Callback function to the collide method."""
 	
-	body1 = geom1.getBody()
-	body2 = geom2.getBody()
-	if (body1 == None and body2 == None):
-		return
-	
-	contacts = ode.collide(geom1, geom2)
-	
-	for c in contacts:
-		c.setMode(ode.ContactApprox1 | ode.ContactBounce)
-		c.setBounce(0.2)
-		c.setMu(5000)
-		j = ode.ContactJoint(odeworld, contactgroup, c)
-		j.attach(body1, body2)
-
+	if geom1.coll_props != None and geom2.coll_props != None:
+		geom1.coll_props.handle_collision(geom1, geom2, contactgroup)
 
 def _sim_step():
 	"""Runs one step of the simulation. This is 1/100th of a simulated second."""
 
-	#Calculate collisions, run ODE
+	#Calculate collisions, run ODE simulation
 	contactgroup = ode.JointGroup() #A group for collision contact joints
-	odespace.collide(contactgroup, _collision)
+	dyn_space.collide(contactgroup, _collision) #Collisions among dyn_space objects
+	ode.collide2(dyn_space, static_space, contactgroup, _collision) #Collisions between dyn_space objects and static_space objects
 	odeworld.quickStep(0.01)
 	contactgroup.empty()
 		
@@ -100,7 +106,7 @@ def run(maxsteps = 0):
 	#Weird case: The display is down, so we're running as an invisible simulation, quick as possible
 	if not ui.opened:
 		if maxsteps == 0:
-			raise NotImplementedError, "If display isn't initialized via app.ui.open(), then you must pass a maximum number of steps to app.run()"
+			raise NotImplementedError, "If display isn't initialized via app.ui.open(), you must pass a maximum number of steps to app.run()"
 		for i in range(maxsteps):
 			_sim_step()
 		return maxsteps
@@ -131,7 +137,7 @@ def run(maxsteps = 0):
 		
 		#Deal with input from the player, quit if requested
 		try:
-			ui.proc_input(objects)
+			ui.proc_input()
 		except QuitException:
 			willquit = 1
 		

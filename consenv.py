@@ -12,6 +12,7 @@ from pygame.locals import *
 import app
 import background
 import camera
+import collision
 import colors
 import console
 import drive

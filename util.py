@@ -2,7 +2,7 @@ from __future__ import division
 
 import pygame, os, ode, math
 
-import app
+import app, collision
 
 def rev2rad(ang):
 	"""Converts an angle in cw revolutions to ccw radians.
@@ -22,7 +22,7 @@ def sphere_body(density, radius):
 	"""Creates an ODE body which is a sphere of the given density and radius.
 	
 	It will be given a body_type data attribute set to "sphere".
-	Also, it will be given radius and density data attributes, set to the given arguments.
+	It will be given radius and density data attributes, set to the given arguments.
 	"""
 	
 	body = ode.Body(app.odeworld)
@@ -34,28 +34,52 @@ def sphere_body(density, radius):
 	body.body_type = "sphere"
 	return body
 
-def box_geom(size):
-	"""Creates an ODE geom which is a box of the given 2-tuple size.
+def box_geom(size, space = None, coll_props = -1):
+	"""Creates an ODE geom in the given space which is a box of the given size.
 
+	If no space is provided, then it will be put into app.dyn_space.
 	It will be given a geom_type data attribute set to "box".
-	Also, it will be given a size data attribute set to the given argument.
+	It will be given a size data data attribute set to the given size argument.
+	
+	It will be given a coll_props data attribute set to the given coll_props argument.
+	If no coll_props argument is provided, it will create a new collision.Props with
+	its default constructor. If you want to disable all collision checking (and, if
+	you do, why are you creating a geom anyways?), then pass None as the coll_props
+	value.
 	"""
 	
-	geom = ode.GeomBox(app.odespace, (size[0], size[1], 1))
+	if (space == None): space = app.dyn_space
+	geom = ode.GeomBox(space, (size[0], size[1], 1))
 	geom.geom_type = "box"
 	geom.size = size
+	
+	if coll_props == -1: geom.coll_props = collision.Props()
+	else:	geom.coll_props = coll_props
+	
 	return geom
 
-def sphere_geom(radius):
-	"""Creates an ODE geom which is a sphere of the given 2-tuple size.
+def sphere_geom(radius, space = None, coll_props = -1):
+	"""Creates an ODE geom in the given space which is a sphere of the given size.
 
+	If no space is provided, then it will be put into app.dyn_space.
 	It will be given a geom_type data attribute set to "sphere".
-	Also, it will be given a radius data attribute set to the given argument.
+	It will be given a radius data attribute set to the given argument.
+	
+	It will be given a coll_props data attribute set to the given coll_props argument.
+	If no coll_props argument is provided, it will create a new collision.Props with
+	its default constructor. If you want to disable all collision checking (and, if
+	you do, why are you creating a geom anyways?), then pass None as the coll_props
+	value.
 	"""
-
-	geom = ode.GeomSphere(app.odespace, radius)
+	
+	if (space == None): space = app.dyn_space
+	geom = ode.GeomSphere(space, radius)
 	geom.geom_type = "sphere"
 	geom.radius = radius
+	
+	if coll_props == -1: geom.coll_props = collision.Props()
+	else:	geom.coll_props = coll_props
+	
 	return geom
 
 
@@ -202,10 +226,11 @@ class TrackerList(list):
 		list.remove(self, val)
 		self._decrid(id(val))
 
+
 class LayeredList(list):
 	"""A list that should contain only other lists, that propogates membership/count checking calls to them
 	and iterates recursively through them. The sublists themselves are skipped for these operations.
-
+	
 	Additionally, when append() is called with a non-list argument, then that argument is instead appended
 	to the last sublist (by calling its append() method, so that if it's another LayeredList, the descent
 	will continue on down).

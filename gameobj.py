@@ -13,7 +13,7 @@ class GameObj(object):
 	Behavior, both in terms of affecting game state and drawing stuff
 	to the screen or playing sounds, is determined entirely by
 	drives and/or the ODE body and geom.
-
+	
 	Data attributes:
 	pos -- 2-tuple of the absolute location of the center of the object, in meters.
 	ang -- The angle of the object, in clockwise revolutions.
@@ -29,13 +29,16 @@ class GameObj(object):
 		The old body is also automatically unassociated and destroyed.
 		Additionally, pos and ang are automatically loaded from body
 		after it is set, and geom's ang and pos are overwritten.
+		Also, upon setting body, if it doesn't have a body_type data attribute,
+		it is given one of "custom".
 	geom -- The ODE geometry used for collision detection.
 		This can be None if you don't want an object to ever collide.
 		Setting geom automatically results it in being associated with
 		body, if there is one set. The old geom is also automatically
 		unassociated and destroyed. Additionally, pos and ang
 		are automatically loaded from geom after it is set, and body's
-		ang and pos are overwritten.
+		ang and pos are overwritten. Also, upon setting geom, if it
+		doesn't have a geom_type data attribute, it is given one of "custom".
 	drives -- A util.TrackerList of drives. Each simstep, each drive's step method
 		is called in order. Each frame, every object's predraw method
 		is called, then after that's done, every object's draw method
@@ -44,16 +47,15 @@ class GameObj(object):
 	"""
 	
 	def __init__(self, pos = Point(0.0, 0.0), ang = 0, body = None, geom = None, drives = util.TrackerList()):
-		"""Creates a GameObj. Pos given overrides the position of body and/or geom.
+		"""Creates a GameObj. Pos and ang given override the position of body and/or geom.
 		
 		If the drives argument passed in is not a TrackerList, then it is converted to
 		one for you.
 		"""
 		self._body = None
 		self._geom = None
-		self.body = body #This calls the smart setter, which loads ang
-		self.geom = geom #This also calls smart setter, which associates if possible (and loads ang again, eh)
-		self.sync_ode() #Fetch the angle and position from ODE (though we're about to override them)
+		self.body = body #This calls the smart setter,
+		self.geom = geom #This also calls smart setter, which associates if possible
 		self.pos = pos #Overwrite ODE position with the passed-in position
 		self.ang = ang #Overwrite ODE angle too
 		if not isinstance(drives, util.TrackerList):

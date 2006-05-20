@@ -123,7 +123,7 @@ class Interface:
 		glFlush()
 		pygame.display.flip()
 	
-	def proc_input(self, objects):
+	def proc_input(self):
 		"""Looks for input from the keyboard/joystick/etc, does the appropriate thing.
 	
 		Throws an app.QuitException if user has requested that the game quit.
@@ -137,25 +137,26 @@ class Interface:
 				self.cons.handle(event)
 				if self.cons.active == 0:
 					if event.key == K_w:
-						objects[1][0].body.addForce((0, -10, 0))
+						app.objects[3][0].body.addForce((0, -10, 0))
 					elif event.key == K_a:
-						objects[1][0].body.addForce((-10, 0, 0))
+						app.objects[3][0].body.addForce((-10, 0, 0))
 					elif event.key == K_s:
-						objects[1][0].body.addForce((0, 10, 0))
+						app.objects[3][0].body.addForce((0, 10, 0))
 					elif event.key == K_d:
-						objects[1][0].body.addForce((10, 0, 0))
+						app.objects[3][0].body.addForce((10, 0, 0))
 					elif event.key == K_c:
-						objects[1][0].body.addForce((100, 0, 0))
+						app.objects[3][0].body.addForce((100, 0, 0))
 					elif event.key == K_q:
-						objects[1][0].body.addTorque((0, 0, -2))
+						app.objects[3][0].body.addTorque((0, 0, -2))
 					elif event.key == K_e:
-						objects[1][0].body.addTorque((0, 0, 2))
+						app.objects[3][0].body.addTorque((0, 0, 2))
 					elif event.key == K_r:
-						objects[1][1].ang += 0.1
+						app.objects[2][0].body.addTorque((0, 0, 20))
 					elif event.key == K_f:
-						objects[1][0].freeze()
+						app.objects[2][0].freeze()
+						app.objects[3][0].freeze()
 					elif event.key == K_t:
-						objects[1][0].pos = Point(2.5, 1)
+						app.objects[3][0].pos = Point(2.5, 1)
 	
 	def close(self):
 		"""If display window is open, destroys all data attributes and closes the display window.
