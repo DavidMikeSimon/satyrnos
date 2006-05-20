@@ -137,25 +137,25 @@ class Interface:
 				self.cons.handle(event)
 				if self.cons.active == 0:
 					if event.key == K_w:
-						objects[1].body.addForce((0, -10, 0))
+						objects[1][0].body.addForce((0, -10, 0))
 					elif event.key == K_a:
-						objects[1].body.addForce((-10, 0, 0))
+						objects[1][0].body.addForce((-10, 0, 0))
 					elif event.key == K_s:
-						objects[1].body.addForce((0, 10, 0))
+						objects[1][0].body.addForce((0, 10, 0))
 					elif event.key == K_d:
-						objects[1].body.addForce((10, 0, 0))
+						objects[1][0].body.addForce((10, 0, 0))
 					elif event.key == K_c:
-						objects[1].body.addForce((100, 0, 0))
+						objects[1][0].body.addForce((100, 0, 0))
 					elif event.key == K_q:
-						objects[1].body.addTorque((0, 0, -2))
+						objects[1][0].body.addTorque((0, 0, -2))
 					elif event.key == K_e:
-						objects[1].body.addTorque((0, 0, 2))
+						objects[1][0].body.addTorque((0, 0, 2))
 					elif event.key == K_r:
-						objects[2].ang += 0.1
+						objects[1][1].ang += 0.1
 					elif event.key == K_f:
-						objects[1].freeze()
+						objects[1][0].freeze()
 					elif event.key == K_t:
-						objects[1].pos = Point(2.5, 1)
+						objects[1][0].pos = Point(2.5, 1)
 	
 	def close(self):
 		"""If display window is open, destroys all data attributes and closes the display window.

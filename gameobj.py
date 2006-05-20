@@ -146,7 +146,7 @@ class GameObj(object):
 	
 	def _set_ode_pos(self, odething):
 		"""Sets the position in an ODE object (body or geom) from the GameObj's position."""
-		odething.setPosition((self._pos[0], self._pos[1], 0))
+		odething.setPosition(self._pos.fake_3d_tuple())
 	
 	def sync_ode(self):
 		"""Sets position and rotation based on the ODE state, cancels non-two-dimensional motion.

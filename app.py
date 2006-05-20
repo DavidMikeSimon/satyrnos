@@ -6,7 +6,7 @@ import util, interface
 odeworld = None
 odespace = None
 
-#All the various game objects (init() prepares this to have objects shoved in it)
+#All the various game objects in a LayeredList (init() prepares this to have objects shoved in it)
 objects = None
 
 #Call this thing's open() method to actually show anything onscreen
@@ -20,6 +20,11 @@ def sim_init():
 	"""Initializes the simulation, including ODE.
 	
 	You must call this before calling run().
+
+	After calling this, app.objects will be a util.LayeredList(). Within,
+	create a bunch of TrackerLists, one for each drawing layer. Within those, put
+	GameObjs. You can create multiple levels of LayeredLists if you wish, but
+	the "leaf" lists should always be TrackerLists of GameObjs.
 	"""
 	
 	global odeworld, odespace, objects
@@ -27,7 +32,7 @@ def sim_init():
 	odeworld.setQuickStepNumIterations(10)
 	odeworld.setERP(0.1)
 	odespace = ode.HashSpace()
-	objects = util.TrackerList()
+	objects = util.LayeredList()
 
 def sim_deinit():
 	"""Deinitializes the camera and simulation, including ODE.

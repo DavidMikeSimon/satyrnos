@@ -21,7 +21,8 @@ def rev2deg(ang):
 def sphere_body(density, radius):
 	"""Creates an ODE body which is a sphere of the given density and radius.
 	
-	It will be given radius and density data attributes, set to the given arguments.
+	It will be given a body_type data attribute set to "sphere".
+	Also, it will be given radius and density data attributes, set to the given arguments.
 	"""
 	
 	body = ode.Body(app.odeworld)
@@ -30,31 +31,38 @@ def sphere_body(density, radius):
 	body.setMass(omass)
 	body.radius = radius
 	body.density = density
+	body.body_type = "sphere"
 	return body
 
 def box_geom(size):
 	"""Creates an ODE geom which is a box of the given 2-tuple size.
 
-	It will be given a size data attribute set to the given argument.
+	It will be given a geom_type data attribute set to "box".
+	Also, it will be given a size data attribute set to the given argument.
 	"""
-
+	
 	geom = ode.GeomBox(app.odespace, (size[0], size[1], 1))
+	geom.geom_type = "box"
 	geom.size = size
 	return geom
 
 def sphere_geom(radius):
 	"""Creates an ODE geom which is a sphere of the given 2-tuple size.
 
-	It will be given a radius data attribute set to the given argument.
+	It will be given a geom_type data attribute set to "sphere".
+	Also, it will be given a radius data attribute set to the given argument.
 	"""
 
 	geom = ode.GeomSphere(app.odespace, radius)
+	geom.geom_type = "sphere"
 	geom.radius = radius
 	return geom
 
 
 class TrackerList(list):
-	"""Behaves exactly like a list, except that the 'in' operator, count, and __contains__ are
+	"""A membership-checking optimized version of the regular list.
+	
+	Behaves exactly like a list, except that the 'in' operator, count, and __contains__ are
 	more efficient, and compare by id(), rather than by equality."""
 	
 	def _decrid(self, i, n = 1):
@@ -82,7 +90,7 @@ class TrackerList(list):
 			for v in y:
 				r._incrid(id(v))
 		return r
-
+	
 	def __contains__(self, y):
 		return self._idcounts.has_key(id(y))
 	
@@ -193,3 +201,64 @@ class TrackerList(list):
 		#This will throw an exception (before _decrid() is called) if val is not in list
 		list.remove(self, val)
 		self._decrid(id(val))
+
+class LayeredList(list):
+	"""A list that should contain only other lists, that propogates membership/count checking calls to them
+	and iterates recursively through them. The sublists themselves are skipped for these operations.
+
+	Additionally, when append() is called with a non-list argument, then that argument is instead appended
+	to the last sublist (by calling its append() method, so that if it's another LayeredList, the descent
+	will continue on down).
+	
+	These features continue to work if you have LayeredLists that contain other LayeredLists, and so on.
+	However, a LayeredList that contains a non-LayeredList will only descend to that first list, not
+	to its sublists."""
+	
+	class _Iter:
+		def __init__(self, tgtlist):
+			self.pos = -1
+			self.tgtlist = tgtlist
+			self.subiter = None
+		
+		def __iter__(self):
+			return self
+		
+		def next(self):
+			if self.subiter == None:
+				self.pos += 1
+				if (self.pos < len(self.tgtlist)):
+					self.subiter = iter(self.tgtlist[self.pos])
+					return self.next()
+				else:
+					raise StopIteration
+			else:
+				try:
+					return self.subiter.next()
+				except StopIteration:
+					self.subiter = None
+					return self.next()
+	
+	def __iter__(self):
+		return LayeredList._Iter(self)
+	
+	def __contains__(self, y):
+		for sublist in self.plain_iter():
+			if y in sublist: return True
+		return False
+	
+	def append(self, o):
+		if isinstance(o, list):
+			super(LayeredList, self).append(o)
+		else:
+			self[len(self)-1].append(o)
+	
+	def plain_iter(self):
+		"""Returns an iterator that behaves like a regular list iterator, doesnt skip over or descend into sublists."""
+		return super(LayeredList, self).__iter__()
+	
+	def count(self, val):
+		"""Sums the values of count() in all sublists of this LayeredList."""
+		sum = 0
+		for sublist in self:
+			sum += sublist.count(val)
+		return sum

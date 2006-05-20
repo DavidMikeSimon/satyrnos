@@ -141,6 +141,12 @@ class Point(_CoordLike, object):
 	def __init__(self, x = 0, y = 0):
 		super(Point, self).__init__(x, y)
 	
+	def __copy__(self):
+		return Point(self[0], self[1])
+	
+	def __deepcopy__(self, memo):
+		return self.__copy__()
+	
 	def dist_to(self, other):
 		"""Returns the distance between this point and another."""
 		return math.sqrt((self[0]-other[0])**2.0 + (self[1]-other[1])**2.0)
@@ -160,6 +166,10 @@ class Point(_CoordLike, object):
 		h = cen.dist_to(self) #Radius of circle
 		b = util.rev2rad(cen.ang_to(self))
 		return Point(h*math.cos(a+b)+cen[0], -1*h*math.sin(a+b)+cen[1])
+	
+	def fake_3d_tuple(self):
+		"""Returns a 3-tuple (point[0], point[1], 0)."""
+		return (self[0], self[1], 0)
 	
 	def _get_x(self): return self[0]
 	def _set_x(self, x): self[0] = x
@@ -183,6 +193,12 @@ class Size(_CoordLike, object):
 	
 	def __init__(self, w = 0, h = 0):
 		super(Size, self).__init__(w, h)
+	
+	def __copy__(self):
+		return Size(self[0], self[1])
+	
+	def __deepcopy__(self, memo):
+		return self.__copy__()
 	
 	def area(self):
 		return self[0]*self[1]
@@ -212,6 +228,12 @@ class Line:
 	def __init__(self, a, b):
 		self.a = a
 		self.b = b
+	
+	def __copy__(self):
+		return Line(self.a, self.b)
+	
+	def __deepcopy__(self, memo):
+		return Line(self.a.__copy__(), self.b.__copy__())
 		
 	def nearest_pt_to(self, p):
 		"""Returns the nearest point on the line segment to an arbitrary point."""
@@ -236,6 +258,12 @@ class Rect:
 		self.cen = cen
 		self.size = size
 		self.ang = ang
+	
+	def __copy__(self):
+		return Rect(self.cen, self.size, self.ang)
+	
+	def __deepcopy__(self, memo):
+		return Line(self.cen.__copy__(), self.size.__copy__(), self.ang)
 	
 	def tl(self): return Point(self.cen.x-(self.size.w/2), self.cen.y-(self.size.h/2)).rot(self.cen, self.ang)
 	def tr(self): return Point(self.cen.x+(self.size.w/2), self.cen.y-(self.size.h/2)).rot(self.cen, self.ang)

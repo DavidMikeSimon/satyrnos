@@ -5,6 +5,7 @@ Bugs:
 - Why doesn't camera centering work perfectly?
 - Put the division fix into all modules
 - DCameraLead gets shakey when framerate dips (try with profiling to see)
+- Get ui.msecs from the main loop in app (better yet, vice versa)
 
 Short term features:
 - DCameraLead has right idea for offset type, but needs more smarts about when to offset.

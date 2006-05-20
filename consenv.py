@@ -21,6 +21,7 @@ import interface
 import magnet
 import resman
 from util import *
+from geometry import *
 
 def wset(num, expr):
 	"""Shortcut for 'app.ui.watchers[num].expr = expr'."""
