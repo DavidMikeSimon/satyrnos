@@ -20,10 +20,11 @@ class DTiledBg(image.DTiledImage):
 	offset -- Like parallax, but simply adds the value in meters directly; camera is not involved.
 	"""
 	
-	def __init__(self, imgfile, size, tilesize, parallax = Point(), clamp = (False, False), offset = Point()):
+	def __init__(self, imgfile, size, tilesize, parallax = None, clamp = None, offset = None):
 		"""Creates an DBackground from the given image file. Size given is in meters."""
 		super(DTiledBg, self).__init__(imgfile, size, tilesize, clamp, offset)
-		self.parallax = parallax
+		if parallax == None: self.parallax = Point()
+		else: self.parallax = parallax
 	
 	def _draw(self, obj):
 		#Apply the parallax, do the draw, then revert the DTiledImage to its original state

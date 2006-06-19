@@ -3,6 +3,7 @@ from __future__ import division
 import pygame, os, ode, math
 
 import app, collision
+from geometry import *
 
 def rev2rad(ang):
 	"""Converts an angle in cw revolutions to ccw radians.
@@ -17,6 +18,22 @@ def rev2deg(ang):
 	This is mostly used when handing angles to OpenGL.
 	"""
 	return 360 * ang
+
+def anchored_joint(joint_type, obj1, anchor = Point(0, 0), obj2 = None):
+	"""Creates a new joint of the given type between two GameObjs, calls setAnchor on it.
+
+	Anchor is given as a point offset relative to the position of obj1.
+	
+	If obj2 is unspecified, then the joint is created between obj1 and the static environment.
+	Either way, object(s) must be correctly positioned before this method is called.
+	"""
+	joint = joint_type(app.odeworld)
+	if (obj2 != None):
+		joint.attach(obj1.body, obj2.body)
+	else:
+		joint.attach(obj1.body, ode.environment)
+	joint.setAnchor((obj1.pos[0] + anchor[0], obj1.pos[1] + anchor[1], 0))
+	return joint
 
 def sphere_body(density, radius):
 	"""Creates an ODE body which is a sphere of the given density and radius.

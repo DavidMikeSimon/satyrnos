@@ -1,11 +1,9 @@
 import math
 import ode
-
-import app
-import util
-from geometry import *
-
 from OpenGL.GL import *
+
+import app, util
+from geometry import *
 
 class GameObj(object):
 	"""The base class for in-game objects of all kinds.
@@ -46,7 +44,7 @@ class GameObj(object):
 	
 	"""
 	
-	def __init__(self, pos = Point(0.0, 0.0), ang = 0, body = None, geom = None, drives = util.TrackerList()):
+	def __init__(self, pos = None, ang = 0, body = None, geom = None, drives = None):
 		"""Creates a GameObj. Pos and ang given override the position of body and/or geom.
 		
 		If the drives argument passed in is not a TrackerList, then it is converted to
@@ -56,12 +54,14 @@ class GameObj(object):
 		self._geom = None
 		self.body = body #This calls the smart setter,
 		self.geom = geom #This also calls smart setter, which associates if possible
-		self.pos = pos #Overwrite ODE position with the passed-in position
+		
+		if pos == None: self.pos = Point(0.0, 0.0)
+		else: self.pos = pos #Overwrite ODE position with the passed-in position
 		self.ang = ang #Overwrite ODE angle too
-		if not isinstance(drives, util.TrackerList):
-			self.drives = drives
-		else:
-			self.drives = util.TrackerList(drives)
+		
+		if drives == None: self.drives = util.TrackerList()
+		elif isinstance(drives, util.TrackerList): self.drives = drives
+		else: self.drives = util.TrackerList(drives)
 	
 	def _get_geom(self): return self._geom
 	
@@ -155,6 +155,8 @@ class GameObj(object):
 		
 		This is called automatically by the main loop after the simstep is ran, so it isn't
 		neccessary for drives or game objects to call it themselves.
+
+		After it's done syncing itself, it calls sync_ode on all the drives.
 		"""
 		
 		if self._body != None:
@@ -206,3 +208,67 @@ class GameObj(object):
 	ang = property(_get_ang, _set_ang)
 	body = property(_get_body, _set_body)
 	geom = property(_get_geom, _set_geom)
+
+class LimbedGameObj(GameObj):
+	"""A GameObj that has some limbs attached.
+	
+	The limbs are just other GameObjs. This GameObj's regular geom is kept in a space, the geom_space data
+	attribute, which also contains the geoms of all the sub-objects.
+	
+	Data attributes (other than ones in GameObj that are still here):
+	space -- An ODE space which contains this object's geom and the geoms of all limbs.
+	limbs -- A TrackerList of other GameObjs that are attached to the main one.
+	joints -- A TrackerList of HingeJoints connecting the limbs to the main geom. Add to this with the add_limb method.
+	"""
+	
+	def __init__(self, pos = None, ang = 0, body = None, drives = None, space = None):
+		"""Creates a LimbedGameObj. Pos and ang given override the position of body.
+
+		Note that you cannot pass a geom into the constructor. That's because when an ODE geom is created, you have to give it
+		a parent at that time, and it's stuck with that parent forever. This means that you have to first create the LimbedGameObj
+		with a geom_space, and then assign a geom afterwords with that geom_space as the parent.
+		
+		If the drives argument passed in is not a TrackerList, then it is converted to
+		one for you.
+
+		For draw(), step(), predraw(), and sync_ode(), after the main object is done, the call is propogated on to the limbs.
+		"""
+		super(LimbedGameObj, self).__init__(pos, ang, body, None, drives)
+		
+		self.limbs = util.TrackerList()
+		if space == None: self.space = ode.SimpleSpace(app.dyn_space)
+		else: self.space = space
+	
+	def add_limb(self, limb, anchor):
+		"""Adds a limb to the limbs data attribute, attaching it with a HingeJoint.
+		
+		Limb objects, when passed in, should already be positioned correctly. The anchor
+		argument should be an offset relative to the limb's center where the joint should be attached."""
+		
+		self.limbs.append(limb)
+		
+		joint = ode.HingeJoint(app.odeworld)
+		joint.attach(limb, geom_space)
+		joint.setAnchor((limb.pos[0] + anchor[0], limb.pos[1] + anchor[1], 0))
+		joint.setAxis((0, 0, 1))
+		self.joints.append(joint)
+	
+	def draw(self):
+		super(LimbedGameObj, self).draw()
+		for limb in self.limbs:
+			limb.draw()
+	
+	def predraw(self):
+		super(LimbedGameObj, self).predraw()
+		for limb in self.limbs:
+			limb.predraw()
+	
+	def step(self):
+		super(LimbedGameObj, self).step()
+		for limb in self.limbs:
+			limb.step()
+	
+	def sync_ode(self):
+		super(LimbedGameObj, self).sync_ode()
+		for limb in self.limbs:
+			limb.sync_ode()

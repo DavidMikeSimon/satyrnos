@@ -12,6 +12,7 @@ import gameobj
 import colors
 import consenv
 import magnet
+import joints
 import camera
 import background
 import image
@@ -109,14 +110,17 @@ for i in range(runs):
 	#app.objects[2][0].drives.append(magnet.DRectMagnet(-0.1, Size(1.5, 0.2), loss=0.06))
 	#app.objects[2][0].drives.append(magnet.DLineMagnet(-0.1, Point(0.75, 0)))
 	app.objects[2][0].ang = 0.3
+
+	app.objects[2][0].drives.append(joints.DEnvJoint(util.anchored_joint(ode.BallJoint, app.objects[2][0])))
 	
 	app.objects.append(TrackerList())
 	
-	app.objects[3].append(gameobj.GameObj(Point(2.5, 1), 0, sphere_body(1, 0.375), sphere_geom(0.370, coll_props = collision.Props(intersec_pri = 0))))
-	app.objects[3][0].drives.append(image.DImage("ball.png", Size(0.75, 0.75)))
+	app.objects[3].append(gameobj.LimbedGameObj(Point(2.5, 1), 0, sphere_body(1, 0.375)))
+	app.objects[3][0].geom = box_geom(Size(0.2, 0.5), app.objects[3][0].space)
+	app.objects[3][0].drives.append(image.DBlock(colors.gray, Size(0.2, 0.5)))
 	#app.objects[3][0].drives.append(camera.DCameraLead(bounds=Rect(Point(5, 5), Size(7, 8))))
 	app.objects[3][0].drives.append(camera.DCameraDirect())
-
+	
 	app.objects.append(TrackerList())
 	app.objects.append(TrackerList())
 	

@@ -11,7 +11,7 @@ class Drive(object):
 	stepping -- If false, then calls to step() do nothing.
 	"""
 	
-	def __init__(self, drawing = True, stepping = True):
+	def __init__(self, drawing = False, stepping = False):
 		self.drawing = drawing
 		self.stepping = stepping
 		
@@ -45,12 +45,15 @@ class Drive(object):
 	def _step(self, obj):
 		pass
 
+
 class DDebug(Drive):
 	"""Drive that executes arbitrary expressions.
+
+	Expressions will be executed within the debugging console's environment.
+	When executed, 'obj' will be set to the relevant GameObj, then del'd after the expression is done.
 	
 	Data attributes:
 	draw_expr, predraw_expr, step_expr -- If not None, these are eval()ed at the appropriate call.
-		When executed, 'obj' will refer to the GameObj.
 	"""
 	
 	def __init__(self, draw_expr = None, predraw_expr = None, step_expr = None):

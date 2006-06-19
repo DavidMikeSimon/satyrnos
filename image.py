@@ -13,7 +13,7 @@ class DImage(drive.Drive):
 	
 	def __init__(self, imgfile, size):
 		"""Creates a DImage from the given image file. Size given is in meters."""
-		super(DImage, self).__init__(True, False)
+		super(DImage, self).__init__(drawing = True)
 		self.tex = resman.Texture(imgfile)
 		self.size = size
 		
@@ -44,17 +44,21 @@ class DTiledImage(drive.Drive):
 	offset -- Moves the tiled pattern around within the drawing box.
 	"""
 	
-	def __init__(self, imgfile, size, tilesize, clamp = (False, False), offset = Point()):
+	def __init__(self, imgfile, size, tilesize, clamp = None, offset = None):
 		"""Creates an DBackground from the given image file. Size given is in meters."""
-		super(DTiledImage, self).__init__(True, False)
+		super(DTiledImage, self).__init__(drawing = True)
 		self.tex = resman.Texture(imgfile)
 		self.size = size
 		self.tilesize = tilesize
-		self.clamp = clamp
-		self.offset = offset
+		
+		if clamp == None: self.clamp = (False, False)
+		else: self.clamp = clamp
+		
+		if offset == None: self.offset = Point()
+		else: self.offset = offset
 	
 	def _draw(self, obj):
-		#For correctly sizing the tile within the polygon.
+		#For correctly sizing the tile within the boundaries.
 		#Since the operation only involves Sizes, we end up with a Size at the end.
 		#However, we can do arithmetic between that and a Point.
 		#So we still treat this as an offset, though Size isn't really for that.
@@ -107,11 +111,15 @@ class DWireBlock(drive.Drive):
 	size -- A 2-tuple with the width and height of the block in meters
 	"""
 	
-	def __init__(self, color = colors.blue, size = (1.0, 1.0)):
+	def __init__(self, color = None, size = None):
 		"""Creates a DWireBlock. Size is in meters."""
-		super(DWireBlock, self).__init__(True, False)
-		self.color = color
-		self.size = size
+		super(DWireBlock, self).__init__(drawing = True)
+
+		if color == None: self.color = colors.blue
+		else: self.color = color
+		
+		if size == None: self.size = (1.0, 1.0)
+		else: self.size = size
 		
 	def _draw(self, obj):
 		topleft = self.size.tl()
@@ -140,11 +148,15 @@ class DBlock(drive.Drive):
 	size -- A 2-tuple with the width and height of the block in meters
 	"""
 	
-	def __init__(self, color = colors.blue, size = (1.0, 1.0)):
+	def __init__(self, color = None, size = None):
 		"""Creates an DBlock. Given position and size are in meters."""
-		super(DBlock, self).__init__(True, False)
-		self.color = color
-		self.size = size
+		super(DBlock, self).__init__(drawing = True)
+		
+		if color == None: self.color = colors.blue
+		else: self.color = color
+		
+		if size == None: self.size = (1.0, 1.0)
+		else: self.size = size
 		
 	def _draw(self, obj):
 		glColor3fv(self.color)

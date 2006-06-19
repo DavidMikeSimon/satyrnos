@@ -45,7 +45,7 @@ class DMagnet(drive.Drive):
 	"""
 
 	def __init__(self, pow, rad = 0, loss = 0, gravity = False):
-		super(DMagnet, self).__init__(False, True)
+		super(DMagnet, self).__init__(stepping = True)
 		self.pow = pow
 		self.rad = rad
 		self.loss = loss
@@ -85,7 +85,7 @@ class DLineMagnet(drive.Drive):
 	"""
 	
 	def __init__(self, pow, end, rad = 0, loss = 0, gravity = False):
-		super(DLineMagnet, self).__init__(False, True)
+		super(DLineMagnet, self).__init__(stepping = True)
 		self.pow = pow
 		self.end = end
 		self.rad = rad
@@ -133,7 +133,7 @@ class DRectMagnet(drive.Drive):
 	"""
 	
 	def __init__(self, pow, size, rad = 0, loss = 0, gravity = False):
-		super(DRectMagnet, self).__init__(False, True)
+		super(DRectMagnet, self).__init__(stepping = True)
 		self.pow = pow
 		self.size = size
 		self.rad = rad

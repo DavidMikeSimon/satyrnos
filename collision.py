@@ -2,6 +2,14 @@ import ode
 
 import app
 
+def collision_cb(contactgroup, geom1, geom2):
+	"""Callback function to the collide method."""
+	
+	if geom1.coll_props != None and geom2.coll_props != None:
+		geom1.coll_props.handle_collision(geom1, geom2, contactgroup)
+	elif (geom1.isSpace() or geom1.coll_props != None) and (geom2.isSpace() or geom2.coll_props != None):
+		ode.collide2(geom1, geom2, contactgroup, collision_cb)
+
 class Props:
 	"""Defines the collision properties of some object.
 		
@@ -45,12 +53,15 @@ class Props:
 					cjoint = ode.ContactJoint(app.odeworld, cjointgroup, c)
 					if (self.intersec_pri == geom2.coll_props.intersec_pri):
 						#Push both objects away from each other
+						cjoint = ode.ContactJoint(app.odeworld, cjointgroup, c)
 						cjoint.attach(geom1.getBody(), geom2.getBody())
 					elif (self.intersec_pri > geom2.coll_props.intersec_pri):
 						#Push the other object, but not this one
+						cjoint = ode.ContactJoint(app.odeworld, cjointgroup, c)
 						cjoint.attach(None, geom2.getBody())
 					else:
 						#Push this object, not the other one
+						cjoint = ode.ContactJoint(app.odeworld, cjointgroup, c)
 						cjoint.attach(geom1.getBody(), None)
 			if len(contacts) > 0:
 				pass #TODO: CALLBACK QUEUEING STUFF HERE

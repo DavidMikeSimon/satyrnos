@@ -8,6 +8,8 @@ Bugs:
 - Get ui.msecs from the main loop in app (better yet, vice versa)
 
 Short term features:
+- Our type for ODE joints
+- Use TrackerList for drives that have sub-objects (limb manager, drive.DSubObjs, etc)
 - Add a collision feature to drives (make sure to start calling these _after_ collision checking cycle is done)
 - Add a mechanism so drives can queue up things to be done to geoms after collision cycle is done with
 - DCameraLead has right idea for offset type, but needs more smarts about when to offset.

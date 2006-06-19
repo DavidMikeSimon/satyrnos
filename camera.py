@@ -16,10 +16,11 @@ class DCameraDirect(drive.Drive):
 		close as it can to the desired offset position.
 	"""
 	
-	def __init__(self, bounds = None, offset = Point(0, 0)):
-		super(DCameraDirect, self).__init__(True, False)
+	def __init__(self, bounds = None, offset = None):
+		super(DCameraDirect, self).__init__(drawing = True)
 		self.bounds = bounds
-		self.offset = offset
+		if offset == None: self.offset = Point(0, 0)
+		else:	self.offset = offset
 	
 	def _predraw(self, obj):
 		wanted_pos = obj.pos + self.offset
@@ -49,7 +50,7 @@ class DCameraLead(drive.Drive):
 	"""
 	
 	def __init__(self, bounds = None, min_vel = 1.5, lead_length = 0.6, speed = 0.4):
-		super(DCameraLead, self).__init__(True, False)
+		super(DCameraLead, self).__init__(drawing = True)
 		self.bounds = bounds
 		self.min_vel = min_vel
 		self.lead_length = lead_length

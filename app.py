@@ -64,19 +64,13 @@ def sim_deinit():
 	objects = None
 	ode.CloseODE()
 
-def _collision(contactgroup, geom1, geom2):
-	"""Callback function to the collide method."""
-	
-	if geom1.coll_props != None and geom2.coll_props != None:
-		geom1.coll_props.handle_collision(geom1, geom2, contactgroup)
-
 def _sim_step():
 	"""Runs one step of the simulation. This is 1/100th of a simulated second."""
 
 	#Calculate collisions, run ODE simulation
 	contactgroup = ode.JointGroup() #A group for collision contact joints
-	dyn_space.collide(contactgroup, _collision) #Collisions among dyn_space objects
-	ode.collide2(dyn_space, static_space, contactgroup, _collision) #Collisions between dyn_space objects and static_space objects
+	dyn_space.collide(contactgroup, collision.collision_cb) #Collisions among dyn_space objects
+	ode.collide2(dyn_space, static_space, contactgroup, collision.collision_cb) #Colls between dyn_space objects and static_space objs
 	odeworld.quickStep(0.01)
 	contactgroup.empty()
 		
@@ -85,7 +79,7 @@ def _sim_step():
 		if o.body != None:
 			o.sync_ode()
 
-	#Have each object do any simulation stuff it needs (this includes calling do() on drives)
+	#Have each object do any simulation stuff it needs
 	for o in objects:
 		o.step()
 
