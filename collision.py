@@ -5,9 +5,13 @@ import app
 def collision_cb(contactgroup, geom1, geom2):
 	"""Callback function to the collide method."""
 	
-	if geom1.coll_props != None and geom2.coll_props != None:
-		geom1.coll_props.handle_collision(geom1, geom2, contactgroup)
-	elif (geom1.isSpace() or geom1.coll_props != None) and (geom2.isSpace() or geom2.coll_props != None):
+	#Get collision props objects if they exist
+	g1_coll_props = getattr(geom1, "coll_props", None)
+	g2_coll_props = getattr(geom2, "coll_props", None)
+	
+	if g1_coll_props != None and g2_coll_props != None:
+		g1_coll_props.handle_collision(geom1, geom2, contactgroup)
+	elif (geom1.isSpace() or g1_coll_props != None) and (geom2.isSpace() or g2_coll_props != None):
 		ode.collide2(geom1, geom2, contactgroup, collision_cb)
 
 class Props:

@@ -32,9 +32,9 @@ for i in range(runs):
 	app.sim_init()
 
 	app.objects.append(TrackerList())
-	app.objects[0].append(gameobj.GameObj(Point(0, -5)))
+	app.objects[0].append(gameobj.GameObj(Point(0, -6)))
 	app.objects[0][0].drives.append(background.DTiledBg("swirlybg.png", Size(100, 100), Size(2, 2), Point(-0.9, -0.9)))
-	app.objects[0][0].drives.append(background.DTiledBg("hills.png", Size(100, 100), Size(1.2, 1.2), Point(-0.7, -0.7), (False, True), Point(0, 5)))
+	app.objects[0][0].drives.append(background.DTiledBg("hills_dan.png", Size(100, 100), Size(4, 2), Point(-0.7, -0.7), (False, True), Point(0, 5)))
 	
 	app.objects.append(TrackerList())
 	
@@ -110,14 +110,27 @@ for i in range(runs):
 	#app.objects[2][0].drives.append(magnet.DRectMagnet(-0.1, Size(1.5, 0.2), loss=0.06))
 	#app.objects[2][0].drives.append(magnet.DLineMagnet(-0.1, Point(0.75, 0)))
 	app.objects[2][0].ang = 0.3
-
 	app.objects[2][0].drives.append(joints.DEnvJoint(util.anchored_joint(ode.BallJoint, app.objects[2][0])))
+	
+	app.objects[2].append(gameobj.LimbedGameObj(body = sphere_body(1, 0.375)))
+	app.objects[2][1].geom = box_geom(Size(0.2, 0.5), app.objects[2][1].space)
+	app.objects[2][1].pos = Point(4.5, 9)
+	app.objects[2][1].add_limb(gameobj.GameObj(
+		Point(4.5, 9.4),
+		body=sphere_body(1, 0.6),
+		geom=box_geom(Size(0.5, 0.5), app.objects[2][1].space),
+		drives=[image.DImage("left.png", Size(0.5, 0.5))])
+	, Point(0, -0.2))
+	app.objects[2][1].drives.append(image.DBlock(colors.gray, Size(0.2, 0.5)))
 	
 	app.objects.append(TrackerList())
 	
-	app.objects[3].append(gameobj.LimbedGameObj(Point(2.5, 1), 0, sphere_body(1, 0.375)))
-	app.objects[3][0].geom = box_geom(Size(0.2, 0.5), app.objects[3][0].space)
-	app.objects[3][0].drives.append(image.DBlock(colors.gray, Size(0.2, 0.5)))
+	
+	app.objects[3].append(gameobj.GameObj(
+		Point(2.5, 1),
+		body=sphere_body(1, 0.375),
+		geom=sphere_geom(0.37),
+		drives=[image.DImage("ball.png", Size(0.75, 0.75))]))
 	#app.objects[3][0].drives.append(camera.DCameraLead(bounds=Rect(Point(5, 5), Size(7, 8))))
 	app.objects[3][0].drives.append(camera.DCameraDirect())
 	

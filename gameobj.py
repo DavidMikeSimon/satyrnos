@@ -236,19 +236,21 @@ class LimbedGameObj(GameObj):
 		super(LimbedGameObj, self).__init__(pos, ang, body, None, drives)
 		
 		self.limbs = util.TrackerList()
+		self.joints = util.TrackerList()
+
 		if space == None: self.space = ode.SimpleSpace(app.dyn_space)
 		else: self.space = space
 	
 	def add_limb(self, limb, anchor):
 		"""Adds a limb to the limbs data attribute, attaching it with a HingeJoint.
 		
-		Limb objects, when passed in, should already be positioned correctly. The anchor
+		Limb objects, when passed in, should already be positioned correctly. It should have
+		a geom that is a child of the LimbedGameObj's space. The anchor
 		argument should be an offset relative to the limb's center where the joint should be attached."""
 		
 		self.limbs.append(limb)
-		
 		joint = ode.HingeJoint(app.odeworld)
-		joint.attach(limb, geom_space)
+		joint.attach(limb.body, self.body)
 		joint.setAnchor((limb.pos[0] + anchor[0], limb.pos[1] + anchor[1], 0))
 		joint.setAxis((0, 0, 1))
 		self.joints.append(joint)

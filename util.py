@@ -99,7 +99,6 @@ def sphere_geom(radius, space = None, coll_props = -1):
 	
 	return geom
 
-
 class TrackerList(list):
 	"""A membership-checking optimized version of the regular list.
 	
