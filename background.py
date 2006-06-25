@@ -17,18 +17,18 @@ class DTiledBg(image.DTiledImage):
 	tilesize -- The size of one tile in meters.
 	parallax -- Point with offset of amount to parallax-nudge in each axis (in meters per meters of camera movement).
 	clamp -- 2-tuple of booleans, clamps the respective axis with GL instead of repeating.
-	offset -- Like parallax, but simply adds the value in meters directly; camera is not involved.
+	tileoffset -- Like parallax, but simply adds the value in meters directly; camera is not involved.
 	"""
 	
-	def __init__(self, imgfile, size, tilesize, parallax = None, clamp = None, offset = None):
+	def __init__(self, imgfile, size, tilesize, parallax = None, clamp = None, tileoffset = None, offset = None, rot_offset = 0):
 		"""Creates an DBackground from the given image file. Size given is in meters."""
-		super(DTiledBg, self).__init__(imgfile, size, tilesize, clamp, offset)
+		super(DTiledBg, self).__init__(imgfile, size, tilesize, clamp, tileoffset, offset, rot_offset)
 		if parallax == None: self.parallax = Point()
 		else: self.parallax = parallax
 	
 	def _draw(self, obj):
 		#Apply the parallax, do the draw, then revert the DTiledImage to its original state
-		old_offset = copy.copy(self.offset)
-		self.offset -= self.parallax*(app.ui.camera-obj.pos)
+		old_offset = copy.copy(self.tileoffset)
+		self.tileoffset -= self.parallax*(app.ui.camera-obj.pos)
 		super(DTiledBg, self)._draw(obj)
-		self.offset = old_offset
+		self.tileoffset = old_offset

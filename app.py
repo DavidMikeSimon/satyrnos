@@ -37,6 +37,7 @@ def sim_init():
 	3 - Player objects (there should really only be one of these) in space "dyn_space"
 	4 - Foreground objects (dust particles, etc) in space "dyn_space" or without geoms
 	5 - Non-colliding foreground imagery (close-up tree leaves, fog, etc), without geoms
+	6 - Light (a single GameObj with a single DLightField drive)
 	This way, drives can make reasonable guesses about where to append() newly created GameObjs.
 	
 	Objects in static_space do not collide with one another. Objects in dyn_space collide

@@ -1,4 +1,7 @@
-import consenv
+from __future__ import division
+from OpenGL.GL import *
+
+import consenv, util
 
 class Drive(object):
 	"""Base class for classes that control GameObj behavior/visuals.
@@ -7,13 +10,17 @@ class Drive(object):
 	implement the respective behaviors.
 	
 	Data attributes:
+	offset -- If not None, then before a draw takes place, we translate by this Point.
+	rot_offset -- If not near-zero, then before a draw takes place, rotates this amount of revolutions.
 	drawing -- If false, then calls to draw() and predraw() do nothing.
 	stepping -- If false, then calls to step() do nothing.
 	"""
 	
-	def __init__(self, drawing = False, stepping = False):
+	def __init__(self, drawing = False, stepping = False, offset = None, rot_offset = 0):
 		self.drawing = drawing
 		self.stepping = stepping
+		self.offset = offset
+		self.rot_offset = rot_offset
 		
 	def draw(self, obj):
 		"""Puts the object on-screen somehow.
@@ -21,7 +28,23 @@ class Drive(object):
 		This will be called by app in a state where GL is ready and
 		GL units are meters."""
 		if (self.drawing):
+			need_pop = False
+			
+			if abs(self.rot_offset*obj.ang) > 0.00001:
+				glPushMatrix()
+				glRotate(util.rev2deg(obj.ang*self.rot_offset), 0, 0, 1)
+				need_pop = True
+			
+			if self.offset != None:
+				glTranslatef(self.offset[0], self.offset[1], 0)
+				if not need_pop:
+					glPushMatrix()
+					need_pop = True
+			
 			self._draw(obj)
+		
+			if need_pop:
+				glPopMatrix()
 	
 	def _draw(self, obj):
 		pass

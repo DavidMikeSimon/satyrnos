@@ -9,20 +9,17 @@ class DImage(drive.Drive):
 	Data attributes:
 	tex -- A resman.Texture instance to display.
 	size -- The size of the image in meters.
-	rot_offset -- Result of multiplying this by object's angle is glRotated before drawing.
 	"""
 	
-	def __init__(self, imgfile, size, rot_offset = 0):
+	def __init__(self, imgfile, size, offset = None, rot_offset = 0):
 		"""Creates a DImage from the given image file. Size given is in meters."""
-		super(DImage, self).__init__(drawing = True)
+		super(DImage, self).__init__(drawing = True, offset = offset, rot_offset = rot_offset)
 		self.tex = resman.Texture(imgfile)
 		self.size = size
+		self.offset = offset
 		self.rot_offset = rot_offset
 	
 	def _draw(self, obj):
-		if (abs(self.rot_offset*obj.ang) > 0.00001):
-			glRotate(util.rev2deg(obj.ang*self.rot_offset), 0, 0, 1)
-		
 		glEnable(GL_TEXTURE_2D)
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE)
 		glBindTexture(GL_TEXTURE_2D, self.tex.glname)
@@ -39,6 +36,7 @@ class DImage(drive.Drive):
 		glDisable(GL_TEXTURE_2D)
 
 
+
 class DTiledImage(drive.Drive):
 	"""Drive that draws an image tiled over an area.
 	
@@ -46,13 +44,13 @@ class DTiledImage(drive.Drive):
 	tex -- A resman.Texture instance to use as the tile.
 	size -- In meters, the size of the region centered at the object's position over which to tile the image.
 	tilesize -- The size of one tile in meters.
-	clamp -- 2-tuple of booleans, clamps the respective axis with GL instead of repeating.
-	offset -- Moves the tiled pattern around within the drawing box.
+	clamp -- 2-tuple of booleans, True causes GL to clamp respective axis instead of repeating.
+	tileoffset -- Moves the tiled pattern around within the drawing box.
 	"""
 	
-	def __init__(self, imgfile, size, tilesize, clamp = None, offset = None):
-		"""Creates an DBackground from the given image file. Size given is in meters."""
-		super(DTiledImage, self).__init__(drawing = True)
+	def __init__(self, imgfile, size, tilesize, clamp = None, tileoffset = None, offset = None, rot_offset = 0):
+		"""Creates an DTiledImage from the given image file. Size given is in meters."""
+		super(DTiledImage, self).__init__(drawing = True, offset = offset, rot_offset = rot_offset)
 		self.tex = resman.Texture(imgfile)
 		self.size = size
 		self.tilesize = tilesize
@@ -60,8 +58,8 @@ class DTiledImage(drive.Drive):
 		if clamp == None: self.clamp = (False, False)
 		else: self.clamp = clamp
 		
-		if offset == None: self.offset = Point()
-		else: self.offset = offset
+		if tileoffset == None: self.tileoffset = Point()
+		else: self.tileoffset = tileoffset
 	
 	def _draw(self, obj):
 		#For correctly sizing the tile within the boundaries.
@@ -71,10 +69,10 @@ class DTiledImage(drive.Drive):
 		texoffset = (self.size/self.tilesize - 1)/2
 		
 		#Convert to units that are tile-size, rather than meters. Negative for translation.
-		tile_offset = (-self.offset)/self.tilesize
+		gl_tile_offset = (-self.tileoffset)/self.tilesize
 		
 		#In OpenGL, y-axis is flipped
-		tile_offset[1] = -tile_offset[1]
+		gl_tile_offset[1] = -gl_tile_offset[1]
 		
 		glEnable(GL_TEXTURE_2D)
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE)
@@ -98,13 +96,13 @@ class DTiledImage(drive.Drive):
 		textopright = Point(1 + texoffset[0], 1 + texoffset[1])
 		
 		glBegin(GL_QUADS)
-		glTexCoord2fv(textopleft + tile_offset)
+		glTexCoord2fv(textopleft + gl_tile_offset)
 		glVertex2fv(self.size.tl())
-		glTexCoord2fv(textopright + tile_offset)
+		glTexCoord2fv(textopright + gl_tile_offset)
 		glVertex2fv(self.size.tr())
-		glTexCoord2fv(texbottomright + tile_offset)
+		glTexCoord2fv(texbottomright + gl_tile_offset)
 		glVertex2fv(self.size.br())
-		glTexCoord2fv(texbottomleft + tile_offset)
+		glTexCoord2fv(texbottomleft + gl_tile_offset)
 		glVertex2fv(self.size.bl())
 		glEnd()
 		glDisable(GL_TEXTURE_2D)
@@ -117,9 +115,9 @@ class DWireBlock(drive.Drive):
 	size -- A 2-tuple with the width and height of the block in meters
 	"""
 	
-	def __init__(self, color = None, size = None):
+	def __init__(self, color = None, size = None, offset = None, rot_offset = 0):
 		"""Creates a DWireBlock. Size is in meters."""
-		super(DWireBlock, self).__init__(drawing = True)
+		super(DWireBlock, self).__init__(drawing = True, offset = offset, rot_offset = rot_offset)
 
 		if color == None: self.color = colors.blue
 		else: self.color = color
@@ -154,9 +152,9 @@ class DBlock(drive.Drive):
 	size -- A 2-tuple with the width and height of the block in meters
 	"""
 	
-	def __init__(self, color = None, size = None):
+	def __init__(self, color = None, size = None, offset = None, rot_offset = 0):
 		"""Creates an DBlock. Given position and size are in meters."""
-		super(DBlock, self).__init__(drawing = True)
+		super(DBlock, self).__init__(drawing = True, offset = offset, rot_offset = rot_offset)
 		
 		if color == None: self.color = colors.blue
 		else: self.color = color

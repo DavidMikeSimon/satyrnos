@@ -78,6 +78,8 @@ class Interface:
 			glClearColor(1.0, 1.0, 1.0, 0.0)
 			glEnable(GL_BLEND)
 			glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
+			#glEnable(GL_LIGHTING)
 			
 			self.cons = console.Console()
 			self.watchers = []

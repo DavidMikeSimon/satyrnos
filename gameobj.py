@@ -214,14 +214,20 @@ class LimbedGameObj(GameObj):
 	
 	The limbs are just other GameObjs. This GameObj's regular geom is kept in a space, the geom_space data
 	attribute, which also contains the geoms of all the sub-objects.
+
+	During the process of running step(), draw(), etc., the following steps are made:
+	- The regular drives for the object are ran
+	- The drives for each limb are ran
+	- The 'drives' attribute is temporarily set to the postdrives, those drives are ran, then the attribute is restored
 	
 	Data attributes (other than ones in GameObj that are still here):
+	postdrives -- A TrackerList of drives which are ran _after_ the limb drives are ran.
 	space -- An ODE space which contains this object's geom and the geoms of all limbs.
 	limbs -- A TrackerList of other GameObjs that are attached to the main one.
 	joints -- A TrackerList of HingeJoints connecting the limbs to the main geom. Add to this with the add_limb method.
 	"""
 	
-	def __init__(self, pos = None, ang = 0, body = None, drives = None, space = None):
+	def __init__(self, pos = None, ang = 0, body = None, drives = None, space = None, postdrives = None):
 		"""Creates a LimbedGameObj. Pos and ang given override the position of body.
 
 		Note that you cannot pass a geom into the constructor. That's because when an ODE geom is created, you have to give it
@@ -240,18 +246,22 @@ class LimbedGameObj(GameObj):
 
 		if space == None: self.space = ode.SimpleSpace(app.dyn_space)
 		else: self.space = space
+		
+		if postdrives == None: self.postdrives = util.TrackerList()
+		elif isinstance(postdrives, util.TrackerList): self.postdrives = postdrives
+		else: self.postdrives = util.TrackerList(postdrives)
 	
 	def add_limb(self, limb, anchor):
 		"""Adds a limb to the limbs data attribute, attaching it with a HingeJoint.
 		
 		Limb objects, when passed in, should already be positioned correctly. It should have
 		a geom that is a child of the LimbedGameObj's space. The anchor
-		argument should be an offset relative to the limb's center where the joint should be attached."""
+		argument should be an offset relative to the object's center where the joint should be attached."""
 		
 		self.limbs.append(limb)
 		joint = ode.HingeJoint(app.odeworld)
 		joint.attach(limb.body, self.body)
-		joint.setAnchor((limb.pos[0] + anchor[0], limb.pos[1] + anchor[1], 0))
+		joint.setAnchor((self.pos[0] + anchor[0], self.pos[1] + anchor[1], 0))
 		joint.setAxis((0, 0, 1))
 		self.joints.append(joint)
 	
@@ -259,16 +269,28 @@ class LimbedGameObj(GameObj):
 		super(LimbedGameObj, self).draw()
 		for limb in self.limbs:
 			limb.draw()
+		temp_drives = self.drives
+		self.drives = self.postdrives
+		super(LimbedGameObj, self).draw()
+		self.drives = temp_drives
 	
 	def predraw(self):
 		super(LimbedGameObj, self).predraw()
 		for limb in self.limbs:
 			limb.predraw()
+		temp_drives = self.drives
+		self.drives = self.postdrives
+		super(LimbedGameObj, self).predraw()
+		self.drives = temp_drives
 	
 	def step(self):
 		super(LimbedGameObj, self).step()
 		for limb in self.limbs:
 			limb.step()
+		temp_drives = self.drives
+		self.drives = self.postdrives
+		super(LimbedGameObj, self).step()
+		self.drives = temp_drives
 	
 	def sync_ode(self):
 		super(LimbedGameObj, self).sync_ode()
