@@ -8,22 +8,15 @@ Bugs:
 - Get ui.msecs from the main loop in app (better yet, vice versa)
 
 Short term features:
-- Our type for ODE joints
+- DSprite should use step for advancement, not draw (so we can use sprite for timing)
+- Joint system needs to make more sense
 - Use TrackerList for drives that have sub-objects (limb manager, drive.DSubObjs, etc)
-- Add a collision feature to drives (make sure to start calling these _after_ collision checking cycle is done)
-- Add a mechanism so drives can queue up things to be done to geoms after collision cycle is done with
-- DCameraLead has right idea for offset type, but needs more smarts about when to offset.
-  See how awesomely "Yoshi's Island" handles this, and Super Mario World for simpler example.
-  Possible idea: require that velocity be above min a certain amount of time before starting movement.
-- Maybe do DCameraLead movement similar to the way the space-division camera worked
-  (only capped at a certain velocity, to prevent it from being way too fast at the beginning).
+- Simple camera like NSMB (force Satyrn to stay inside box 1/6 of screensize)
 - Make console 'help()' work better
-- Camera that understands teleports (DCameraPan w/ return)
 - Magnets also move magnet towards pulled object
 - Antialiasing
 - Options dialog, saving options
 - Changing resolution/fullscreen state (Windows and Linux)
-- Collide2 (and maybe contact groups) to decrease spurious collisions
 - Level loading
 - Control mapping
 - Gamepad support
@@ -35,11 +28,11 @@ Short term features:
 
 Long term features:
 - Level editor w/ carefully designed palette
-- Limb animation
 - Particles
 - Tutorial & test levels
 - Lighting effects
 - Sound
+- Ropes and chains
 - Windows launcher (maybe self-contained binary)
 
 Design notes:
