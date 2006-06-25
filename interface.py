@@ -157,6 +157,8 @@ class Interface:
 						app.objects[3][0].freeze()
 					elif event.key == K_t:
 						app.objects[3][0].pos = Point(2.5, 1)
+					elif event.key == K_p:
+						app.objects[2][2].drives[0].playing = not app.objects[2][2].drives[0].playing
 	
 	def close(self):
 		"""If display window is open, destroys all data attributes and closes the display window.

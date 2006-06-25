@@ -9,15 +9,20 @@ class DImage(drive.Drive):
 	Data attributes:
 	tex -- A resman.Texture instance to display.
 	size -- The size of the image in meters.
+	rot_offset -- Result of multiplying this by object's angle is glRotated before drawing.
 	"""
 	
-	def __init__(self, imgfile, size):
+	def __init__(self, imgfile, size, rot_offset = 0):
 		"""Creates a DImage from the given image file. Size given is in meters."""
 		super(DImage, self).__init__(drawing = True)
 		self.tex = resman.Texture(imgfile)
 		self.size = size
-		
+		self.rot_offset = rot_offset
+	
 	def _draw(self, obj):
+		if (abs(self.rot_offset*obj.ang) > 0.00001):
+			glRotate(util.rev2deg(obj.ang*self.rot_offset), 0, 0, 1)
+		
 		glEnable(GL_TEXTURE_2D)
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE)
 		glBindTexture(GL_TEXTURE_2D, self.tex.glname)
@@ -32,6 +37,7 @@ class DImage(drive.Drive):
 		glVertex2fv(self.size.bl())
 		glEnd()
 		glDisable(GL_TEXTURE_2D)
+
 
 class DTiledImage(drive.Drive):
 	"""Drive that draws an image tiled over an area.

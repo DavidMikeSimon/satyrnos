@@ -21,6 +21,7 @@ import image
 import interface
 import magnet
 import resman
+import sprite
 from util import *
 from geometry import *
 

@@ -17,6 +17,7 @@ import camera
 import background
 import image
 import collision
+import sprite
 
 from geometry import *
 from util import *
@@ -111,6 +112,7 @@ for i in range(runs):
 	#app.objects[2][0].drives.append(magnet.DLineMagnet(-0.1, Point(0.75, 0)))
 	app.objects[2][0].ang = 0.3
 	app.objects[2][0].drives.append(joints.DEnvJoint(util.anchored_joint(ode.BallJoint, app.objects[2][0])))
+	app.objects[2][0].drives.append(image.DImage("screw.png", Size(0.1, 0.1), -1))
 	
 	app.objects[2].append(gameobj.LimbedGameObj(body = sphere_body(1, 0.375)))
 	app.objects[2][1].geom = box_geom(Size(0.2, 0.5), app.objects[2][1].space)
@@ -122,9 +124,25 @@ for i in range(runs):
 		drives=[image.DImage("left.png", Size(0.5, 0.5))])
 	, Point(0, -0.2))
 	app.objects[2][1].drives.append(image.DBlock(colors.gray, Size(0.2, 0.5)))
+
+	app.objects[2].append(gameobj.GameObj(
+		Point(6, 9.4),
+		body=sphere_body(1, 0.4),
+		geom=box_geom(Size(0.5, 0.5)),
+		drives=[sprite.DSprite("a",
+			{
+				"one":image.DImage("1.png", Size(0.5, 0.5)),
+				"two":image.DImage("2.png", Size(0.5, 0.5)),
+				"three":image.DImage("3.png", Size(0.5, 0.5)),
+				"four":image.DImage("4.png", Size(0.5, 0.5))
+			}, {
+				"a":sprite.DSprite.Anim([("one", 100), ("two", 100), ("three", 100), ("four", 100)], "b"),
+				"b":sprite.DSprite.Anim([("four", 700), ("two", 700), ("four", 700), ("two", 700)], "a")
+			}
+		)]
+	))
 	
 	app.objects.append(TrackerList())
-	
 	
 	app.objects[3].append(gameobj.GameObj(
 		Point(2.5, 1),
@@ -136,7 +154,6 @@ for i in range(runs):
 	
 	app.objects.append(TrackerList())
 	app.objects.append(TrackerList())
-	
 	
 	#profile.run('app.run()', 'satyrprof')
 	app.run()
