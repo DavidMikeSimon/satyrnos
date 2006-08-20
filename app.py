@@ -27,8 +27,8 @@ def sim_init():
 	LayeredLists should always contain either more LayeredLists and/or TrackerLists,
 	and TrackerLists should contain only GameObjs. This way, you can make everything
 	as deep or shallow as you like, but the recursive behavior of LayeredList.append()
-	will make sure that GameObjs that are created and stuff in some top list arrive
-	at the right place.
+	will make sure that GameObjs that are created and stuffed into some top list will
+	eventually arrive at the right place.
 	
 	The top-level layers of objects should be as follows:
 	0 - Non-colliding background imagery, and general non-colliding GameObjs, without geoms

@@ -1,7 +1,7 @@
 from __future__ import division
 from OpenGL.GL import *
 
-import consenv, util
+import consenv, util, sre
 
 class Drive(object):
 	"""Base class for classes that control GameObj behavior/visuals.
@@ -15,12 +15,15 @@ class Drive(object):
 	drawing -- If false, then calls to draw() and predraw() do nothing.
 	stepping -- If false, then calls to step() do nothing.
 	"""
-	
+
 	def __init__(self, drawing = False, stepping = False, offset = None, rot_offset = 0):
 		self.drawing = drawing
 		self.stepping = stepping
 		self.offset = offset
 		self.rot_offset = rot_offset
+	
+	def __str__(self):
+		return sre.match(r"<class '.+\.(.+)'>", str(type(self))).group(1)[1:] #Extract simple type name, remove first "D"
 		
 	def draw(self, obj):
 		"""Puts the object on-screen somehow.

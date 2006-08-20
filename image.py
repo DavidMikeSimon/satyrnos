@@ -19,6 +19,9 @@ class DImage(drive.Drive):
 		self.offset = offset
 		self.rot_offset = rot_offset
 	
+	def __str__(self):
+		return super(DImage, self).__str__() + "(" + self.tex.filename + ")"
+	
 	def _draw(self, obj):
 		glEnable(GL_TEXTURE_2D)
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE)
@@ -60,6 +63,9 @@ class DTiledImage(drive.Drive):
 		
 		if tileoffset == None: self.tileoffset = Point()
 		else: self.tileoffset = tileoffset
+	
+	def __str__(self):
+		return super(DTiledImage, self).__str__() + "(" + self.tex.filename + ")"
 	
 	def _draw(self, obj):
 		#For correctly sizing the tile within the boundaries.

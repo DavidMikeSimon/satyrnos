@@ -18,6 +18,7 @@ import background
 import image
 import collision
 import sprite
+import light
 
 from geometry import *
 from util import *
@@ -105,7 +106,7 @@ for i in range(runs):
 	
 	app.objects.append(TrackerList())
 	
-	app.objects[2].append(gameobj.GameObj(Point(2.5, 2.5), 0, sphere_body(1, 0.75), box_geom(Size(1.5, 0.08))))
+	app.objects[2].append(gameobj.GameObj(Point(2.2, 2.5), 0, sphere_body(1, 0.75), box_geom(Size(1.5, 0.08))))
 	#app.objects[2].append(gameobj.GameObj(Point(2.5, 2.5), geom=box_geom(Size(1.5, 0.08))))
 	app.objects[2][0].drives.append(image.DBlock(colors.purple, Size(1.5, 0.08)))
 	#app.objects[2][0].drives.append(magnet.DRectMagnet(-0.1, Size(1.5, 0.2), loss=0.06))
@@ -147,14 +148,17 @@ for i in range(runs):
 	
 	app.objects[3].append(gameobj.GameObj(
 		Point(2.5, 1),
-		body=sphere_body(1, 0.375),
-		geom=sphere_geom(0.37),
-		drives=[image.DImage("ball.png", Size(0.75, 0.75))]))
+		body=sphere_body(1, 0.5),
+		geom=sphere_geom(0.493),
+		drives=[image.DImage("ball.png", Size(1, 1))]))
 	#app.objects[3][0].drives.append(camera.DCameraLead(bounds=Rect(Point(5, 5), Size(7, 8))))
 	app.objects[3][0].drives.append(camera.DCameraDirect())
 	
 	app.objects.append(TrackerList())
 	app.objects.append(TrackerList())
+	app.objects.append(TrackerList())
+	
+	#app.objects[6].append(gameobj.GameObj(drives = [light.DLightField(0.5)]))
 	
 	#profile.run('app.run()', 'satyrprof')
 	app.run()

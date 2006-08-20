@@ -1,5 +1,4 @@
-import math
-import ode
+import math, ode, sre
 from OpenGL.GL import *
 
 import app, util
@@ -62,6 +61,14 @@ class GameObj(object):
 		if drives == None: self.drives = util.TrackerList()
 		elif isinstance(drives, util.TrackerList): self.drives = drives
 		else: self.drives = util.TrackerList(drives)
+	
+	def __str__(self):
+		return " GO: (%7.3f, %7.3f) %s [%s]" % (
+			self.pos.x,
+			self.pos.y,
+			("%06.3f" % self.ang)[2:], #Cut off negative sign (-0.0's are common) and whole number part
+			", ".join([str(d) for d in self.drives])
+		)
 	
 	def _get_geom(self): return self._geom
 	
@@ -226,6 +233,8 @@ class LimbedGameObj(GameObj):
 	limbs -- A TrackerList of other GameObjs that are attached to the main one.
 	joints -- A TrackerList of HingeJoints connecting the limbs to the main geom. Add to this with the add_limb method.
 	"""
+
+	_tabberpat = sre.compile(r"^", sre.M)
 	
 	def __init__(self, pos = None, ang = 0, body = None, drives = None, space = None, postdrives = None):
 		"""Creates a LimbedGameObj. Pos and ang given override the position of body.
@@ -250,6 +259,11 @@ class LimbedGameObj(GameObj):
 		if postdrives == None: self.postdrives = util.TrackerList()
 		elif isinstance(postdrives, util.TrackerList): self.postdrives = postdrives
 		else: self.postdrives = util.TrackerList(postdrives)
+	
+	def __str__(self):
+		ret = super(LimbedGameObj, self).__str__().replace(" ", "L", 1) #To make it line up with " GO" lines
+		ret += "\n" + sre.sub(self._tabberpat, "   ", str(self.limbs)).rstrip()
+		return ret
 	
 	def add_limb(self, limb, anchor):
 		"""Adds a limb to the limbs data attribute, attaching it with a HingeJoint.

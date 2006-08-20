@@ -1,6 +1,6 @@
 from __future__ import division
 
-import pygame, os, ode, math
+import pygame, os, ode, math, sre
 
 import app, collision
 from geometry import *
@@ -192,6 +192,14 @@ class TrackerList(list):
 	
 	def __setslice__(self, i, j, v):
 		self.__setitem__(slice(i, j), v)
+
+	def __str__(self):
+		ret = ""
+		x = 0
+		for i in self:
+			ret = ret + "%02i: %s\n" % (x, str(i))
+			x += 1
+		return ret
 	
 	def __init__(self, seq = None):
 		"""Creates a new TrackerList. If seq is provided, creates a new TrackerList with seq's items."""
@@ -255,6 +263,8 @@ class LayeredList(list):
 	However, a LayeredList that contains a non-LayeredList will only descend to that first list, not
 	to its sublists."""
 	
+	_tabberpat = sre.compile(r"^", sre.M)
+	
 	class _Iter:
 		def __init__(self, tgtlist):
 			self.pos = -1
@@ -286,6 +296,14 @@ class LayeredList(list):
 		for sublist in self.plain_iter():
 			if y in sublist: return True
 		return False
+	
+	def __str__(self):
+		ret = ""
+		x = 0
+		for i in self.plain_iter():
+			ret = ret + ("%02i:\n%s\n" % (x, sre.sub(self._tabberpat, " ", str(i)))).strip() + "\n"
+			x += 1
+		return ret.strip()
 	
 	def append(self, o):
 		if isinstance(o, list):

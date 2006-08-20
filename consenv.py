@@ -41,6 +41,10 @@ def wfps(num = 0):
 	"""Sets a given watcher (#0 by default) to show the FPS."""
 	app.ui.watchers[num].expr = "app.ui.clock"
 
+def objs():
+	"""Short for 'print app.objects'"""
+	print app.objects
+
 class ConsDoc(pydoc.TextDoc):
 	#The regular bolder tries to replace X with X<BKSP>X
 	#That doesn't work very well for the debugging console output

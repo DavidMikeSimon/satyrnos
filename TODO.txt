@@ -8,9 +8,9 @@ Bugs:
 - Get ui.msecs from the main loop in app (better yet, vice versa)
 
 Short term features:
+- Script to generate hulls, add classes to geometry.pm for ODEifying/drawing arbitrary hulls
 - DSprite should use step for advancement, not draw (so we can use sprite for timing)
 - Joint system needs to make more sense
-- Use TrackerList for drives that have sub-objects (limb manager, drive.DSubObjs, etc)
 - Simple camera like NSMB (force Satyrn to stay inside box 1/6 of screensize)
 - Make console 'help()' work better
 - Magnets also move magnet towards pulled object
@@ -47,16 +47,16 @@ Gamepad with 6 buttons and stick or d-pad:
  |     D
 
 Ground movement:
-D: Jump
-Stick away from ground: Stand
-Stick towards ground: Crouch/add extra friction when sliding
-Stick parallel to ground: Walk/crawl
+Stick away from ground: Push off slightly
+Stick towards ground: Crouch, add friction
+Stick parallel to ground: Walk (using claws to stick)
+Stick diagonal (between towards ground and parallel to ground): Crawl (using claws to stick)
 
 Air movement:
 Stick: Slow drift (only available to the degree that you've already got velocity, and it lowers total velocity)
 
 Pulsing:
-Tap B: Pulse to stop motion (if already still, just a waste of energy)
+Tap B: Pulse to stop motion (if already still, does nothing and indicates that you're still)
 Tap B + Direction: Pulse
 Hold B, Release B (+ optional direction): Charged pulse
 Hold B, Push A: Cancel pulse charge
@@ -67,9 +67,11 @@ Hold C, Release (+ optional direction): Charged sword attack
 Hold C, Push A: Cancel sword charge
 
 Interaction:
-A (+ optional direction, defaults to nearest interactable object): Grab
-A while holding object: Drop object (release with no force)
-Hold A while holding object, release A (+ optional direction, defaults to facing direction): Throw held object
+A: Use held object, or nearest interactive object if not holding anything
+D (+ optional direction, defaults to nearest interactable object): Grab
+Press and release D while holding object: Drop object (release with no force)
+Release D while holding object w/ direction: Throw held object
+Hold D, Push A: Cancel throw/drop
 
 Magnets and Gravity:
 L: Blue magnetic field

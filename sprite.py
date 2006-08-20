@@ -42,6 +42,12 @@ class DSprite(drive.Drive):
 		self.playing = playing
 		self.frame = 0
 	
+	def __str__(self):
+		if self.playing:
+			return super(DSprite, self).__str__() + "(P:" + str(self.library[self.anims[self.cur_anim].frames[self.frame][0]]) + ")"
+		else:
+			return super(DSprite, self).__str__() + "(STOPPED)"
+	
 	def cur_frame_len(self):
 		"""Returns the length in msecs of the current frame."""
 		return (self.anims[self.cur_anim].frames[self.frame])[1]

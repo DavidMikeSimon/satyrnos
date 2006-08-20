@@ -3,6 +3,7 @@ import sys, pygame
 from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLU import *
+from OpenGL.GLUT import *
 
 import console, resman, app
 from geometry import *
@@ -72,6 +73,8 @@ class Interface:
 			pygame.mouse.set_visible(0)
 			self.screen = pygame.display.set_mode(self.winsize, DOUBLEBUF | OPENGL)
 			self.clock = pygame.time.Clock()
+
+			glutInit(sys.argv) #Since we don't use GLUT for anything but drawing text, cmd line arguments are ignored anyways
 			
 			glViewport(0, 0, self.winsize[0], self.winsize[1])
 			gluOrtho2D(0.0, self.winsize[0], self.winsize[1], 0.0) #This way makes the y-axis go in the direction we want
@@ -79,7 +82,17 @@ class Interface:
 			glEnable(GL_BLEND)
 			glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-			#glEnable(GL_LIGHTING)
+#			glShadeModel(GL_SMOOTH)
+#			glLightfv(GL_LIGHT0, GL_POSITION, (1.0, 1.0, 1.0, 0.0))
+#			glLightfv(GL_LIGHT0, GL_DIFFUSE, (1.0, 1.0, 0.3, 1.0))
+#			glLightfv(GL_LIGHT0, GL_SPECULAR, (1.0, 1.0, 0.3, 1.0))
+#			glLightfv(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.5)
+#			glLightModelfv(GL_LIGHT_MODEL_LOCAL_VIEWER, (0.1, 0.1, 0.1, 1.0))
+#			
+#			glEnable(GL_LIGHTING)
+#			glEnable(GL_LIGHT0)
+#			glEnable(GL_COLOR_MATERIAL)
+#			glColorMaterial(GL_FRONT, GL_DIFFUSE)
 			
 			self.cons = console.Console()
 			self.watchers = []
@@ -108,7 +121,7 @@ class Interface:
 		
 		#Translate so that camera position is centered
 		glTranslatef(self.winsize[0]/(2*self.pixm) - self.camera[0], self.winsize[1]/(2*self.pixm) - self.camera[1], 0)
-		
+
 		#This actually draws the objects
 		for o in objects:
 			o.draw()
