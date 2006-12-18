@@ -19,7 +19,7 @@ def rev2deg(ang):
 	"""
 	return 360 * ang
 
-def anchored_joint(joint_type, obj1, anchor = Point(0, 0), obj2 = None):
+def anchored_joint(joint_type, obj1, anchor = None, obj2 = None):
 	"""Creates a new joint of the given type between two GameObjs, calls setAnchor on it.
 
 	Anchor is given as a point offset relative to the position of obj1.
@@ -27,6 +27,7 @@ def anchored_joint(joint_type, obj1, anchor = Point(0, 0), obj2 = None):
 	If obj2 is unspecified, then the joint is created between obj1 and the static environment.
 	Either way, object(s) must be correctly positioned before this method is called.
 	"""
+	if anchor == None: anchor = Point(0, 0)
 	joint = joint_type(app.odeworld)
 	if (obj2 != None):
 		joint.attach(obj1.body, obj2.body)
@@ -51,53 +52,6 @@ def sphere_body(density, radius):
 	body.body_type = "sphere"
 	return body
 
-def box_geom(size, space = None, coll_props = -1):
-	"""Creates an ODE geom in the given space which is a box of the given size.
-
-	If no space is provided, then it will be put into app.dyn_space.
-	It will be given a geom_type data attribute set to "box".
-	It will be given a size data data attribute set to the given size argument.
-	
-	It will be given a coll_props data attribute set to the given coll_props argument.
-	If no coll_props argument is provided, it will create a new collision.Props with
-	its default constructor. If you want to disable all collision checking (and, if
-	you do, why are you creating a geom anyways?), then pass None as the coll_props
-	value.
-	"""
-	
-	if (space == None): space = app.dyn_space
-	geom = ode.GeomBox(space, (size[0], size[1], 1))
-	geom.geom_type = "box"
-	geom.size = size
-	
-	if coll_props == -1: geom.coll_props = collision.Props()
-	else:	geom.coll_props = coll_props
-	
-	return geom
-
-def sphere_geom(radius, space = None, coll_props = -1):
-	"""Creates an ODE geom in the given space which is a sphere of the given size.
-
-	If no space is provided, then it will be put into app.dyn_space.
-	It will be given a geom_type data attribute set to "sphere".
-	It will be given a radius data attribute set to the given argument.
-	
-	It will be given a coll_props data attribute set to the given coll_props argument.
-	If no coll_props argument is provided, it will create a new collision.Props with
-	its default constructor. If you want to disable all collision checking (and, if
-	you do, why are you creating a geom anyways?), then pass None as the coll_props
-	value.
-	"""
-	
-	if (space == None): space = app.dyn_space
-	geom = ode.GeomSphere(space, radius)
-	geom.geom_type = "sphere"
-	geom.radius = radius
-	
-	if coll_props == -1: geom.coll_props = collision.Props()
-	else:	geom.coll_props = coll_props
-	
-	return geom
 
 class TrackerList(list):
 	"""A membership-checking optimized version of the regular list.
@@ -253,11 +207,11 @@ class TrackerList(list):
 
 class LayeredList(list):
 	"""A list that should contain only other lists, that propogates membership/count checking calls to them
-	and iterates recursively through them. The sublists themselves are skipped for these operations.
+	and iterates recursively through them. The sublists themselves are skipped for these operations; that
+	is, to iterate over a LayeredList of lists of Thingy objects is to iterate over Thingy objects.
 	
 	Additionally, when append() is called with a non-list argument, then that argument is instead appended
-	to the last sublist (by calling its append() method, so that if it's another LayeredList, the descent
-	will continue on down).
+	to the last sublist. 
 	
 	These features continue to work if you have LayeredLists that contain other LayeredLists, and so on.
 	However, a LayeredList that contains a non-LayeredList will only descend to that first list, not

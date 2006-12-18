@@ -44,25 +44,10 @@ class Texture(object):
 		else:
 			return object.__new__(cls)
 
-	def radius(self):
-		"""Calculates the radius of the image (farthest pixel from center with an alpha over 10%)."""
-		self.surf.lock()
-		center = Point(float(self.surf.get_width()-1)/2, float(self.surf.get_height()-1)/2)
-		cand_pos = Point(0, 0)
-		cand_dist = 0
-		for x in range(self.surf.get_width()):
-			for y in range(self.surf.get_height()):
-				pos = Point(x, y)
-				dist = pos.dist_to(center)
-				if dist > cand_dist and self.surf.get_at((x, y))[3] > (255/10):
-					cand_pos = pos
-					cand_dist = dist
-		self.surf.unlock()
-		return cand_dist
-
 def unload_all():
 	"""Unloads all resources.
 	
 	Invalidates all instances of any of the classes in this module."""
-	glDeleteTextures(map(lambda x: x.glname, Texture.cache.values()))
-	Texture.cache = {}
+	if (len(Texture.cache) > 0):
+		glDeleteTextures(map(lambda x: x.glname, Texture.cache.values()))
+		Texture.cache = {}

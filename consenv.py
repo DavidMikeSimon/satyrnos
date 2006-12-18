@@ -17,13 +17,15 @@ import colors
 import console
 import drive
 import gameobj
+from geometry import *
+import hull
 import image
 import interface
 import magnet
 import resman
 import sprite
+import text
 from util import *
-from geometry import *
 
 def wset(num, expr):
 	"""Shortcut for 'app.ui.watchers[num].expr = expr'."""

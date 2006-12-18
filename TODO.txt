@@ -6,8 +6,10 @@ Bugs:
 - Put the division fix into all modules
 - DCameraLead gets shakey when framerate dips (try with profiling to see)
 - Get ui.msecs from the main loop in app (better yet, vice versa)
+- Weirdness, extra bounding box on LimbedGameObjects when app.ui.draw_hulls is on
 
 Short term features:
+- Keep Geoms in Hulls in GameObjs, not Hulls in Geoms in GameObjs
 - Script to generate hulls, add classes to geometry.pm for ODEifying/drawing arbitrary hulls
 - DSprite should use step for advancement, not draw (so we can use sprite for timing)
 - Joint system needs to make more sense
@@ -63,17 +65,16 @@ Hold B, Push A: Cancel pulse charge
 
 Sword:
 Tap C (+ optional direction, defaults to facing/vel direction): Sword attack
+Tap C Repeatedly: Sword combo attack
 Hold C, Release (+ optional direction): Charged sword attack
 Hold C, Push A: Cancel sword charge
 
 Interaction:
 A: Use held object, or nearest interactive object if not holding anything
 D (+ optional direction, defaults to nearest interactable object): Grab
-Press and release D while holding object: Drop object (release with no force)
-Release D while holding object w/ direction: Throw held object
-Hold D, Push A: Cancel throw/drop
+D while holding object: Drop object (release with no force)
+D while holding object + direction: Throw held object
 
 Magnets and Gravity:
 L: Blue magnetic field
 R: Red magnetic field
-L+R Hold (1sec): Toggle anti-grav field

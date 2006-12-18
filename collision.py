@@ -1,4 +1,6 @@
-import ode
+from __future__ import division
+
+import ode, sre
 
 import app
 
@@ -9,6 +11,7 @@ def collision_cb(contactgroup, geom1, geom2):
 	g1_coll_props = getattr(geom1, "coll_props", None)
 	g2_coll_props = getattr(geom2, "coll_props", None)
 	
+	#If both geoms either have collision properties or are spaces, then perform a collision
 	if g1_coll_props != None and g2_coll_props != None:
 		g1_coll_props.handle_collision(geom1, geom2, contactgroup)
 	elif (geom1.isSpace() or g1_coll_props != None) and (geom2.isSpace() or g2_coll_props != None):
@@ -25,7 +28,7 @@ class Props:
 	of this system is to allow things like moving platforms that have bodies
 	and geoms but cannot be pushed around by the player, although they can push
 	the player around.
-	
+
 	Data attributes:
 	intersec_push -- If True, creates contact joints at intersections to push this object, the other, or both away.
 		Both objects must have this flag on for any intersection prevention to occur.
@@ -45,6 +48,8 @@ class Props:
 		both this object's reaction as well as the other's.
 		
 		Newly created contact joints are placed into cjointgroup."""
+
+		#TODO: Collision priority stuff doesn't work very well when higher priority object pushes
 		
 		#TODO: ADD CALLBACK QUEUEING STUFF HERE
 		if (self.intersec_push and geom2.coll_props.intersec_push) or (True):

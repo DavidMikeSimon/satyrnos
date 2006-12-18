@@ -1,7 +1,7 @@
 import math, ode, sre
 from OpenGL.GL import *
 
-import app, util
+import app, util, hull
 from geometry import *
 
 class GameObj(object):
@@ -26,16 +26,13 @@ class GameObj(object):
 		The old body is also automatically unassociated and destroyed.
 		Additionally, pos and ang are automatically loaded from body
 		after it is set, and geom's ang and pos are overwritten.
-		Also, upon setting body, if it doesn't have a body_type data attribute,
-		it is given one of "custom".
 	geom -- The ODE geometry used for collision detection.
 		This can be None if you don't want an object to ever collide.
-		Setting geom automatically results it in being associated with
+		Setting geom will cause it to be ssociated with
 		body, if there is one set. The old geom is also automatically
 		unassociated and destroyed. Additionally, pos and ang
 		are automatically loaded from geom after it is set, and body's
-		ang and pos are overwritten. Also, upon setting geom, if it
-		doesn't have a geom_type data attribute, it is given one of "custom".
+		ang and pos are overwritten.
 	drives -- A util.TrackerList of drives. Each simstep, each drive's step method
 		is called in order. Each frame, every object's predraw method
 		is called, then after that's done, every object's draw method
@@ -197,6 +194,8 @@ class GameObj(object):
 			glRotatef(util.rev2deg(self.ang), 0, 0, 1)
 		for d in self.drives:
 			d.draw(self)
+		if self.geom != None and app.ui.draw_hulls:
+			self.geom.hull.draw(self)
 		glPopMatrix()
 	
 	def freeze(self):

@@ -33,6 +33,7 @@ class Interface:
 		doesn't screw up calculations.
 	pixm -- Number of screen pixels per game meter.
 		We always try and go for a 4x3 meter display.
+	draw_hulls -- If set to True, then GameObj's draw method also calls draw() on geom Hulls.
 	cons -- An instance of console.Console used for in-game debugging.
 	watchers -- A sequence of console.Watchers used for in-game debugging.
 	camera -- Where, in game meters, the view is centered.
@@ -54,6 +55,7 @@ class Interface:
 		self.camera = Point()
 		self.screen = None
 		self.clock = None
+		self.draw_hulls = False
 		self.cons = None
 		self.msecs = 0
 		self.watchers = []
@@ -73,7 +75,7 @@ class Interface:
 			pygame.mouse.set_visible(0)
 			self.screen = pygame.display.set_mode(self.winsize, DOUBLEBUF | OPENGL)
 			self.clock = pygame.time.Clock()
-
+			
 			glutInit(sys.argv) #Since we don't use GLUT for anything but drawing text, cmd line arguments are ignored anyways
 			
 			glViewport(0, 0, self.winsize[0], self.winsize[1])
@@ -81,7 +83,7 @@ class Interface:
 			glClearColor(1.0, 1.0, 1.0, 0.0)
 			glEnable(GL_BLEND)
 			glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-
+			
 #			glShadeModel(GL_SMOOTH)
 #			glLightfv(GL_LIGHT0, GL_POSITION, (1.0, 1.0, 1.0, 0.0))
 #			glLightfv(GL_LIGHT0, GL_DIFFUSE, (1.0, 1.0, 0.3, 1.0))
@@ -93,6 +95,9 @@ class Interface:
 #			glEnable(GL_LIGHT0)
 #			glEnable(GL_COLOR_MATERIAL)
 #			glColorMaterial(GL_FRONT, GL_DIFFUSE)
+
+			glPointSize(4)
+			glLineWidth(2)
 			
 			self.cons = console.Console()
 			self.watchers = []

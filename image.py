@@ -1,4 +1,7 @@
+from __future__ import division
+
 from OpenGL.GL import *
+import math
 
 import app, util, drive, colors, resman
 from geometry import *
@@ -113,6 +116,7 @@ class DTiledImage(drive.Drive):
 		glEnd()
 		glDisable(GL_TEXTURE_2D)
 
+
 class DWireBlock(drive.Drive):
 	"""Drive that draws a wire-frame block (borders and diagonals).
 	
@@ -175,4 +179,100 @@ class DBlock(drive.Drive):
 		glVertex2fv(self.size.tr())
 		glVertex2fv(self.size.br())
 		glVertex2fv(self.size.bl())
+		glEnd()
+
+class DCircle(drive.Drive):
+	"""Drive that draws either the outline of a circle or a filled-in circle.
+
+	Data attributes:
+	color -- The color to draw the circle in.
+	radius -- How big the circle is.
+	filled -- If true, then the circle is filled
+	segs -- How many line segments to use to approximate the circle
+	"""
+
+	def __init__(self, radius = 0.0, color = None, filled = False, segs = 50, offset = None):
+		"""Creates a DCircle."""
+		super(DCircle, self).__init__(drawing = True, offset = offset)
+
+		if color == None: self.color = colors.blue
+		else: self.color = color
+		
+		self.radius = radius
+		self.filled = filled
+		self.segs = segs
+	
+	def _draw(self, obj):
+		glColor3fv(self.color)
+		
+		if (self.filled):
+			glBegin(GL_POLYGON)
+		else:
+			glBegin(GL_LINE_LOOP)
+		
+		for x in range(0, self.segs):
+			rads = (x/self.segs)*2*math.pi
+			glVertex2f(math.cos(rads)*self.radius, math.sin(rads)*self.radius)
+		
+		glEnd()
+
+class DPoly(drive.Drive):
+	"""Drive that draws either a closed polygon or its outline.
+
+	Data attributes:
+	color -- The color to draw the polygon in.
+	vertices -- A list of Points.
+	filled -- If true, then the polygon is filled
+	"""
+
+	def __init__(self, vertices, color = None, filled = False, offset = None, rot_offset = 0):
+		"""Creates a DPoly.
+		
+		The vertices list is not copied."""
+		super(DPoly, self).__init__(drawing = True, offset = offset, rot_offset = rot_offset)
+		
+		if color == None: self.color = colors.red
+		else: self.color = color
+		
+		self.filled = filled
+		self.vertices = vertices
+	
+	def _draw(self, obj):
+		glColor3fv(self.color)
+		
+		if (self.filled):
+			glBegin(GL_POLYGON)
+		else:
+			glBegin(GL_LINE_LOOP)
+
+		for p in self.vertices:
+			glVertex2fv(p)
+
+		glEnd()
+
+class DPoints(drive.Drive):
+	"""Drive that draws a bunch of points as dots
+
+	Data attributes:
+	color -- The color to draw the dots with.
+	points -- A list of Points.
+	"""
+
+	def __init__(self, points, color = None, offset = None, rot_offset = 0):
+		"""Creates a DPoints.
+		
+		The points list is not copied."""
+		super(DPoints, self).__init__(drawing = True, offset = offset, rot_offset = rot_offset)
+		
+		if color == None: self.color = colors.green
+		else: self.color = color
+		
+		self.points = points
+	
+	def _draw(self, obj):
+		glColor3fv(self.color)
+		
+		glBegin(GL_POINTS)
+		for p in self.points:
+			glVertex2fv(p)
 		glEnd()

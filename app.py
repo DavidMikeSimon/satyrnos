@@ -92,7 +92,7 @@ def run(maxsteps = 0):
 	simulation steps. To make it run for 5 seconds, pass a value of 500.
 	
 	Before running this function, you have to have called app.sim_init().
-	You also can call app.ui.open()() first if you want anything to appear
+	You also can call app.ui.open() first if you want anything to appear
 	on-screen; otherwise, the simulation runs as quickly as possible. If
 	you have not called app.ui.open(), then the maxsteps argument is
 	required.
