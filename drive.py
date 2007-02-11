@@ -39,10 +39,10 @@ class Drive(object):
 				need_pop = True
 			
 			if self.offset != None:
-				glTranslatef(self.offset[0], self.offset[1], 0)
 				if not need_pop:
 					glPushMatrix()
 					need_pop = True
+				glTranslatef(self.offset[0], self.offset[1], 0)
 			
 			self._draw(obj)
 		

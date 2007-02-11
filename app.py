@@ -1,4 +1,5 @@
-import ode, sys
+from __future__ import division
+import ode, sys, math
 
 import collision, util, interface
 
@@ -66,7 +67,7 @@ def sim_deinit():
 	ode.CloseODE()
 
 def _sim_step():
-	"""Runs one step of the simulation. This is 1/100th of a simulated second."""
+	"""Runs one step of the simulation. This is 1/60th of a simulated second."""
 
 	#Calculate collisions, run ODE simulation
 	contactgroup = ode.JointGroup() #A group for collision contact joints
@@ -115,20 +116,19 @@ def run(maxsteps = 0):
 		totalms += elapsedms
 		
 		#Figure out how many simulation steps we're doing this frame.
-		#It should be one for every 100th of a second that has passed.
-		#We do it this way, instead of dividing elapsedms by 10, because
-		#if we did it that way, 4 frames in a row each 5ms long would
-		#cause no sim_steps to be ran, instead of 2.
-		steps = (totalms - totalsteps*10)/10
+		#Shouldn't be zero, since frames per second is the same as steps per second
+		#However, it's alright to be occasionally zero, since clock.tick is sometimes slightly off
+		steps = int(math.floor((totalms*ui.maxfps/1000)))-totalsteps
+		print "ELAPSEDMS: %i   STEPS: %i" % (elapsedms, steps)
 		
 		#If we have a maximum number of steps, only go up to that amount
 		if maxsteps != 0 and steps + totalsteps > maxsteps:
 			steps = maxsteps - totalsteps
 		
 		#Run the simulation the desired number of steps
-		totalsteps += steps
 		for i in range(steps):
 			_sim_step()
+		totalsteps += steps
 		
 		#Deal with input from the player, quit if requested
 		try:

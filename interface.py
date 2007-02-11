@@ -23,8 +23,9 @@ class Interface:
 	winmeters -- The size of the display window in meters.
 	screen -- The PyGame screen.
 	maxfps -- The maximum frames-per-second that we will draw at.
-		There's no point in setting this higher than 100, since
-		the simulation only runs at 100hz.
+	   This is also the maximum number of steps per second we
+		run at, so changing this value will change the simulation
+		as well as the display.
 	clock -- An instance of pygame.time.Clock() used for timing.
 		Do not call get_time() on this, use the 'msecs' variable instead.
 	msecs -- The reuslt of the last call to clock.get_time(). Use this
@@ -50,7 +51,7 @@ class Interface:
 		self.opened = False
 		self.winsize = Size(1024, 768)
 		self.winmeters = Size(4, 3) #Shouldn't ever be changed
-		self.maxfps = 100
+		self.maxfps = 60
 		self.pixm = self.winsize[0]/4
 		self.camera = Point()
 		self.screen = None
@@ -83,6 +84,14 @@ class Interface:
 			glClearColor(1.0, 1.0, 1.0, 0.0)
 			glEnable(GL_BLEND)
 			glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+			
+			# Enable antialiasing
+			#glHint(GL_POINT_SMOOTH_HINT, GL_NICEST)
+			#glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
+			#glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST)
+			glEnable(GL_POINT_SMOOTH)
+			glEnable(GL_LINE_SMOOTH)
+			glEnable(GL_POLYGON_SMOOTH)
 			
 #			glShadeModel(GL_SMOOTH)
 #			glLightfv(GL_LIGHT0, GL_POSITION, (1.0, 1.0, 1.0, 0.0))
@@ -157,21 +166,21 @@ class Interface:
 				self.cons.handle(event)
 				if self.cons.active == 0:
 					if event.key == K_w:
-						app.objects[3][0].body.addForce((0, -10, 0))
+						app.objects[3][0].body.addForce((0, -20, 0))
 					elif event.key == K_a:
-						app.objects[3][0].body.addForce((-10, 0, 0))
+						app.objects[3][0].body.addForce((-20, 0, 0))
 					elif event.key == K_s:
-						app.objects[3][0].body.addForce((0, 10, 0))
+						app.objects[3][0].body.addForce((0, 20, 0))
 					elif event.key == K_d:
-						app.objects[3][0].body.addForce((10, 0, 0))
+						app.objects[3][0].body.addForce((20, 0, 0))
 					elif event.key == K_c:
-						app.objects[3][0].body.addForce((100, 0, 0))
+						app.objects[3][0].body.addForce((200, 0, 0))
 					elif event.key == K_q:
-						app.objects[3][0].body.addTorque((0, 0, -2))
+						app.objects[3][0].body.addTorque((0, 0, -4))
 					elif event.key == K_e:
-						app.objects[3][0].body.addTorque((0, 0, 2))
+						app.objects[3][0].body.addTorque((0, 0, 4))
 					elif event.key == K_r:
-						app.objects[2][0].body.addTorque((0, 0, 20))
+						app.objects[2][0].body.addTorque((0, 0, 40))
 					elif event.key == K_f:
 						app.objects[2][0].freeze()
 						app.objects[3][0].freeze()

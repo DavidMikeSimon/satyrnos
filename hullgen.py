@@ -115,7 +115,7 @@ def calc_complex_hull(surf):
 			vertices.append(Point(next[0], next[1]))
 			border_pixels.remove(next)
 		else:
-			print "Aborting due to pixel ordering error in complex hull: Dead-end pixel (%i, %i)" % last
+			print "Aborting due to pixel ordering error in complex hull: Dead-end pixel (%i, %i)" % (last[0], last[1])
 			sys.exit()
 	
 	first = vertices[0]
@@ -149,11 +149,12 @@ def calc_complex_hull(surf):
 				death_list_five.append(x)
 	
 	# Since the starting point is arbitrary, it's quite possible that it's deletable
-	#first = vertices[0]
-	#second = vertices[1]
-	#last = vertices[len(vertices)-1]
-	#if abs(last.ang_to(first) - last.ang_to(second)) < MAX_SMOOTHING_ANGLE:
-	#	death_list_five.insert(0, 0)
+	first = vertices[0]
+	second = vertices[1]
+	last = vertices[len(vertices)-1]
+	s = Line(last,second)
+	if s.nearest_pt_to(first) > MAX_LINE_OFF:
+		death_list_five.insert(0, 0)
 	
 	death_list_five.reverse() # Keeps us from tripping up the numbering of lower-numbered death-listed pixels
 	for t in death_list_five:

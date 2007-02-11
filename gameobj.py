@@ -186,15 +186,20 @@ class GameObj(object):
 		for d in self.drives:
 			d.predraw(self)
 	
-	def draw(self):
-		"""Draws the object; pushes correct GL matrix, calls draw() on every drive, restores GL."""
+	def draw(self, draw_hull = None):
+		"""Draws the object; pushes correct GL matrix, calls draw() on every drive, restores GL.
+		
+		Optionally, specify the draw_hull argument. Set it to False to not draw a hall, True to draw it,
+		or None (that is, just leave it unset) to use the value from app.ui.draw_hulls."""
+		if draw_hull == None:
+			draw_hull = app.ui.draw_hulls
 		glPushMatrix()
 		glTranslatef(self.pos[0], self.pos[1], 0)
 		if (self.ang > 0.00001):
 			glRotatef(util.rev2deg(self.ang), 0, 0, 1)
 		for d in self.drives:
 			d.draw(self)
-		if self.geom != None and app.ui.draw_hulls:
+		if self.geom != None and draw_hull:
 			self.geom.hull.draw(self)
 		glPopMatrix()
 	
@@ -269,8 +274,8 @@ class LimbedGameObj(GameObj):
 		
 		Limb objects, when passed in, should already be positioned correctly. It should have
 		a geom that is a child of the LimbedGameObj's space. The anchor
-		argument should be an offset relative to the object's center where the joint should be attached."""
-		
+		argument should be an offset relative to the object's center where the joint should be attached.
+		"""	
 		self.limbs.append(limb)
 		joint = ode.HingeJoint(app.odeworld)
 		joint.attach(limb.body, self.body)
@@ -284,7 +289,7 @@ class LimbedGameObj(GameObj):
 			limb.draw()
 		temp_drives = self.drives
 		self.drives = self.postdrives
-		super(LimbedGameObj, self).draw()
+		super(LimbedGameObj, self).draw(draw_hull = False)
 		self.drives = temp_drives
 	
 	def predraw(self):
