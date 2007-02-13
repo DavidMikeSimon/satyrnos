@@ -125,6 +125,10 @@ class _CoordLike(list):
 		c[0] = abs(c[0])
 		c[1] = abs(c[1])
 		return c
+	
+	def near_to(self, y):
+		"""Returns true if this point and the other are close enough to be considered equal."""
+		return (abs(self[0]-y[0])<0.0001 and abs(self[1]-y[1])<0.0001)
 
 
 class Point(_CoordLike, object):

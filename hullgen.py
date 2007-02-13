@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+from __future__ import division
 import pygame
 import math
 import os
@@ -7,25 +8,16 @@ import sre
 import sys
 
 import app
-import drive
 import gameobj
 import hull
-import colors
-import consenv
-import magnet
-import joints
-import camera
-import background
 import image
-import collision
-import sprite
-import light
+import camera
 
 from geometry import *
 from util import *
 
 MAX_TRANSPARENT_ALPHA = 25 #Out of 255
-MAX_LINE_OFF = 0.5 #In pixels
+MAX_LINE_OFF = 0.8 #In pixels
 
 def calc_radius(surf):
 	"""Returns the radius for a spherical hull of a surface (farthest pixel from center with an alpha over 10%)."""
@@ -48,9 +40,11 @@ def calc_complex_hull(surf):
 	hull = []
 	surf.lock()
 	
-	# Find all the regions of transparent pixels (we'll only care later about ones that touch the edge)
-	outer_clear_pixels = set()
-	inner_clear_pixels = set()
+	# Figure out which pixels are border pixels. Such pixels are:
+	# 1. Fairly transparent
+	# 2. Next to one edge of the image, or next to another border pixel
+	border_pixels = set()
+	seen = set()
 	for x in range(surf.get_width()):
 		for y in range(surf.get_height()):
 			pos = (x, y)
@@ -58,12 +52,11 @@ def calc_complex_hull(surf):
 			if surf.get_at(pos)[3] > MAX_TRANSPARENT_ALPHA:
 				continue
 			
-			if pos in outer_clear_pixels or pos in inner_clear_pixels:
+			if pos in border_pixels:
 				continue
 			
 			edge_touching = False
 			queue = set()
-			seen = set()
 			queue.add(pos)
 			while len(queue) > 0:
 				q = queue.pop()
@@ -75,12 +68,10 @@ def calc_complex_hull(surf):
 				seen.add(q)
 			
 			if edge_touching:
-				for s in seen: outer_clear_pixels.add(s)
-			else:
-				for s in seen: inner_clear_pixels.add(s)
+				for s in seen: border_pixels.add(s)
 	
-	# Find all the non-transparent pixels that are next to either an image border or an image-border touching transparent region
-	border_pixels = set()
+	# Find all the edges that are between a non-transparent pixel and an image border or a border pixel 
+	hull_edges = set()
 	for x in range(surf.get_width()):
 		for y in range(surf.get_height()):
 			pos = (x, y)
@@ -88,82 +79,89 @@ def calc_complex_hull(surf):
 			if surf.get_at(pos)[3] <= MAX_TRANSPARENT_ALPHA:
 				continue
 			
-			for n in ((pos[0]+1, pos[1]), (pos[0]-1, pos[1]), (pos[0], pos[1]+1), (pos[0], pos[1]-1)):
-				if n[0] < 0 or n[0] >= surf.get_width() or n[1] < 0 or n[1] >= surf.get_height() or n in outer_clear_pixels:
-					border_pixels.add(pos)
+			for n in ((pos[0]+1, pos[1]), (pos[0]-1, pos[1])):
+				if n[0] < 0 or n[0] >= surf.get_width() or n in border_pixels:
+					mid = (pos[0]+n[0])/2
+					hull_edges.add(Line(Point(mid, n[1]-0.5), Point(mid, n[1]+0.5)))
+			for n in ((pos[0], pos[1]+1), (pos[0], pos[1]-1)):
+				if n[1] < 0 or n[1] >= surf.get_height() or n in border_pixels:
+					mid = (pos[1]+n[1])/2
+					hull_edges.add(Line(Point(n[0]-0.5, mid), Point(n[0]+0.5, mid)))
 	
 	# We're done gathering information from the surface, now we need to organize it
 	surf.unlock()
-	
-	def are_neighbors(a, b):
-		return abs(a[0] - b[0]) <= 1 and abs(a[1] - b[1]) <= 1
-	
-	# Sequence the pixels into one list of Points that wraps around back to the first one
-	# Complain and die if it doesn't work
-	# TODO: One-pixel warts will often break this, and two pixel warts will break this every time
-	first_victim = border_pixels.pop()
-	vertices = [Point(first_victim[0], first_victim[1])]
-	while (len(border_pixels) > 0):
-		last = vertices[len(vertices)-1]
-		next = None
-		for p in border_pixels:
-			if are_neighbors(p, last):
-				next = p
-				break
 
-		if next != None:
-			vertices.append(Point(next[0], next[1]))
-			border_pixels.remove(next)
+	# Sequence the list of edges into one list of Points that wraps around back to the first one
+	first_victim = hull_edges.pop()
+	vertices = [first_victim.a, first_victim.b]
+	while (len(hull_edges) > 0):
+		last = vertices[len(vertices)-1]
+		to_remove = None
+		for e in hull_edges:
+			if last.near_to(e.a):
+				to_remove = e
+				vertices.append(e.b)
+				break
+			elif last.near_to(e.b):
+				to_remove = e
+				vertices.append(e.a)
+				break
+			
+		if to_remove != None:
+			hull_edges.remove(to_remove)
 		else:
-			print "Aborting due to pixel ordering error in complex hull: Dead-end pixel (%i, %i)" % (last[0], last[1])
+			print "Aborting due to dead-end pixel in complex hull: (%f, %f)" % last
 			sys.exit()
 	
 	first = vertices[0]
-	last = vertices[len(vertices)-1]
-	if not are_neighbors(first, last):
-		print "Aborting due to pixel ordering error in complex hull: No wraparound"
+	last = vertices[-1]
+	if not first.near_to(last):
+		print "Aborting due to lack of wraparound in complex hull"
 		sys.exit()
+	else:
+		vertices.pop()
 	
-	# Create an approximate hull of lines based on the border pixels
-	# We'll do this by subtracting superfluous points from the vertices list
-	death_list_five = [] #Pixels that will be removed from the vertices list later
-	next_idx = 0
-	for n in range(0, len(vertices)-2):
-		if n < next_idx: continue
-		here = vertices[n]
-		f = n+1 #End-point for a line starting at 'here'
-		while f < len(vertices)-1:
-			s = Line(vertices[n], vertices[f])
-			too_far = False
-			for p in range(n, f):
-				if s.nearest_pt_to(vertices[p]).dist_to(vertices[p]) > MAX_LINE_OFF:
-					too_far = True
+	if len(vertices) > 3:
+		# Create an approximate hull of lines based on the border pixels
+		# We'll do this by subtracting superfluous points from the vertices list
+		death_list_five = [] #Indices for points that will be removed
+		start = 0
+		while start < (len(vertices)-2):
+			for end in range(len(vertices)-1, start+1, -1):
+				line = Line(vertices[start], vertices[end])
+				cullable = True
+				for mid in range(start+1, end):
+					if line.nearest_pt_to(vertices[mid]).dist_to(vertices[mid]) > MAX_LINE_OFF:
+						cullable = False
+						break
+				if cullable:
+					for c in range(start+1, end):
+						death_list_five.append(c)
+					start = end-1
 					break
-			if too_far:
-				break
-			f = f+1
+			start += 1
 		
-		next_idx = f
-		if f - n > 1:
-			for x in range(n+1, f):
-				death_list_five.append(x)
+		death_list_five.reverse() # Keeps us from tripping up the numbering of lower-numbered death-listed pixels
+		for i in death_list_five:
+			del vertices[i]
+		
+		# The starting and ending points are arbitrary, and will never be 'mid' in the above loop
+		# But, they still might be cullable
+		if len(vertices) > 4:
+			# Check if both first and last are cullable, or just one or the other
+			line = Line(vertices[-2],vertices[1])
+			if line.nearest_pt_to(vertices[-1]).dist_to(vertices[-1]) <= MAX_LINE_OFF and line.nearest_pt_to(vertices[0]).dist_to(vertices[0]) <= MAX_LINE_OFF:
+				del vertices[0]
+				del vertices[-1]
+			elif Line(vertices[-1], vertices[1]).nearest_pt_to(vertices[0]).dist_to(vertices[0]) <= MAX_LINE_OFF:
+				del vertices[0]
+			elif Line(vertices[-2], vertices[0]).nearest_pt_to(vertices[-1]).dist_to(vertices[-1]) <= MAX_LINE_OFF:
+				del vertices[-1]
 	
-	# Since the starting point is arbitrary, it's quite possible that it's deletable
-	first = vertices[0]
-	second = vertices[1]
-	last = vertices[len(vertices)-1]
-	s = Line(last,second)
-	if s.nearest_pt_to(first) > MAX_LINE_OFF:
-		death_list_five.insert(0, 0)
-	
-	death_list_five.reverse() # Keeps us from tripping up the numbering of lower-numbered death-listed pixels
-	for t in death_list_five:
-		del vertices[t]
-
 	# Translate/scale the vertices so that (0, 0) is the center of the image and it has a size of (1, 1)
 	w = float(surf.get_width())
 	h = float(surf.get_height())
-	return ":".join("%s,%s" % (v[0]/w - 0.5, v[1]/h - 0.5) for v in vertices)
+	return ":".join("%s,%s" % ((v[0]+0.5)/w - 0.5, (v[1]+0.5)/h - 0.5) for v in vertices)
 
 
 def gen_hull(surf, mode):
@@ -216,8 +214,8 @@ for x in range(7):
 
 app.objects[2].append(gameobj.GameObj(
 	Point(0.5, 0.5),
-	geom=hull.load_image_hull("splat.png", Size(3, 3)).make_geom(),
-	drives=[image.DImage("splat.png", Size(3, 3))]))
+	geom=hull.load_image_hull("splat.png", Size(5, 5)).make_geom(),
+	drives=[image.DImage("splat.png", Size(5, 5))]))
 
 # Invisible camera object
 app.objects[3].append(gameobj.GameObj(

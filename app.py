@@ -119,7 +119,6 @@ def run(maxsteps = 0):
 		#Shouldn't be zero, since frames per second is the same as steps per second
 		#However, it's alright to be occasionally zero, since clock.tick is sometimes slightly off
 		steps = int(math.floor((totalms*ui.maxfps/1000)))-totalsteps
-		print "ELAPSEDMS: %i   STEPS: %i" % (elapsedms, steps)
 		
 		#If we have a maximum number of steps, only go up to that amount
 		if maxsteps != 0 and steps + totalsteps > maxsteps:
