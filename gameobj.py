@@ -200,7 +200,7 @@ class GameObj(object):
 		for d in self.drives:
 			d.draw(self)
 		if self.geom != None and draw_hull:
-			self.geom.hull.draw(self)
+			self.geom.draw_drive.draw(self)
 		glPopMatrix()
 	
 	def freeze(self):

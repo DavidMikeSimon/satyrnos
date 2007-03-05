@@ -49,5 +49,5 @@ def unload_all():
 	
 	Invalidates all instances of any of the classes in this module."""
 	if (len(Texture.cache) > 0):
-		glDeleteTextures(map(lambda x: x.glname, Texture.cache.values()))
+		glDeleteTextures([ x.glname for x in Texture.cache.values() ])
 		Texture.cache = {}

@@ -16,24 +16,8 @@ import camera
 from geometry import *
 from util import *
 
-MAX_TRANSPARENT_ALPHA = 25 #Out of 255
-MAX_LINE_OFF = 0.8 #In pixels
 
 def calc_radius(surf):
-	"""Returns the radius for a spherical hull of a surface (farthest pixel from center with an alpha over 10%)."""
-	surf.lock()
-	center = Point(float(surf.get_width()-1)/2, float(surf.get_height()-1)/2)
-	cand_pos = Point(0, 0)
-	cand_dist = 0
-	for x in range(surf.get_width()):
-		for y in range(surf.get_height()):
-			pos = Point(x, y)
-			dist = pos.dist_to(center)
-			if dist > cand_dist and surf.get_at((x, y))[3] > MAX_TRANSPARENT_ALPHA:
-				cand_pos = pos
-				cand_dist = dist
-	surf.unlock()
-	return cand_dist
 
 def calc_complex_hull(surf):
 	"""Returns a sequence of Points defining a (potentially concave) hull around the surface."""

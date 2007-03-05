@@ -13,7 +13,7 @@ class Interface:
 	
 	If you want anything interactive to happen, be sure to call 'app.ui.open()'
 	before calling 'app.run()'. With the Interface opened, the game runs
-	normally and interactively. With the interface closed, Satyrnose tries
+	normally and interactively. With the interface closed, Satyrnos tries
 	to arrive at a final state (after a specified number of steps) as quickly
 	as possible.
 	
@@ -72,7 +72,7 @@ class Interface:
 			self.opened = True
 			
 			pygame.init()
-			pygame.display.set_caption('Satyrnose')
+			pygame.display.set_caption('Satyrnos')
 			pygame.mouse.set_visible(0)
 			self.screen = pygame.display.set_mode(self.winsize, DOUBLEBUF | OPENGL)
 			self.clock = pygame.time.Clock()
