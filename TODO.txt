@@ -2,6 +2,7 @@ HULL JUNK IN PROGRESS:
 - Move the complex hull code over too
 - Get rid of hullgen.py
 - Get rid of hulls/*.hull files, have that specified in the level data (or for now, satyrnos.py)
+- Mold generators that load from images should use resman
 
 Bugs:
 - Friction should decrease velocity

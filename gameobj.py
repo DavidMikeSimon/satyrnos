@@ -289,7 +289,7 @@ class LimbedGameObj(GameObj):
 			limb.draw()
 		temp_drives = self.drives
 		self.drives = self.postdrives
-		super(LimbedGameObj, self).draw(draw_hull = False)
+		super(LimbedGameObj, self).draw(draw_geom = False)
 		self.drives = temp_drives
 	
 	def predraw(self):
