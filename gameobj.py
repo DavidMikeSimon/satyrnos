@@ -186,20 +186,20 @@ class GameObj(object):
 		for d in self.drives:
 			d.predraw(self)
 	
-	def draw(self, draw_hull = None):
+	def draw(self, draw_geom = None):
 		"""Draws the object; pushes correct GL matrix, calls draw() on every drive, restores GL.
 		
 		Optionally, specify the draw_hull argument. Set it to False to not draw a hall, True to draw it,
-		or None (that is, just leave it unset) to use the value from app.ui.draw_hulls."""
-		if draw_hull == None:
-			draw_hull = app.ui.draw_hulls
+		or None (that is, just leave it unset) to use the value from app.ui.draw_geoms."""
+		if draw_geom == None:
+			draw_geom = app.ui.draw_geoms
 		glPushMatrix()
 		glTranslatef(self.pos[0], self.pos[1], 0)
 		if (self.ang > 0.00001):
 			glRotatef(util.rev2deg(self.ang), 0, 0, 1)
 		for d in self.drives:
 			d.draw(self)
-		if self.geom != None and draw_hull:
+		if self.geom != None and draw_geom:
 			self.geom.draw_drive.draw(self)
 		glPopMatrix()
 	

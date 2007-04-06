@@ -34,7 +34,7 @@ class Interface:
 		doesn't screw up calculations.
 	pixm -- Number of screen pixels per game meter.
 		We always try and go for a 4x3 meter display.
-	draw_hulls -- If set to True, then GameObj's draw method also calls draw() on geom Hulls.
+	draw_geoms -- If set to True, then GameObj's draw method also calls x.draw_drive.draw() for every geom x.
 	cons -- An instance of console.Console used for in-game debugging.
 	watchers -- A sequence of console.Watchers used for in-game debugging.
 	camera -- Where, in game meters, the view is centered.
@@ -56,7 +56,7 @@ class Interface:
 		self.camera = Point()
 		self.screen = None
 		self.clock = None
-		self.draw_hulls = False
+		self.draw_geoms = False
 		self.cons = None
 		self.msecs = 0
 		self.watchers = []

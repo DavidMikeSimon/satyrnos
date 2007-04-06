@@ -40,12 +40,12 @@ for i in range(runs):
 	
 	app.objects.append(TrackerList())
 	
-	app.objects[1].append(gameobj.GameObj(Point(2.5, 0), geom=hull.BoxHull().make_geom(Size(5, 0.1), app.static_space)))
-	app.objects[1].append(gameobj.GameObj(Point(0, 5), 0.25, geom=hull.BoxHull().make_geom(Size(10, 0.1), app.static_space)))
-	app.objects[1].append(gameobj.GameObj(Point(5, 10), geom=hull.BoxHull().make_geom(Size(10, 0.1), app.static_space)))
-	app.objects[1].append(gameobj.GameObj(Point(10, 7.5), 0.25, geom=hull.BoxHull().make_geom(Size(5, 0.1), app.static_space)))
-	app.objects[1].append(gameobj.GameObj(Point(7.5, 5), geom=hull.BoxHull().make_geom(Size(5, 0.1), app.static_space)))
-	app.objects[1].append(gameobj.GameObj(Point(5, 2.5), 0.25, geom=hull.BoxHull().make_geom(Size(5, 0.1), app.static_space)))
+	app.objects[1].append(gameobj.GameObj(Point(2.5, 0), geom=hull.BoxMold().make_geom(Size(5, 0.1), app.static_space)))
+	app.objects[1].append(gameobj.GameObj(Point(0, 5), 0.25, geom=hull.BoxMold().make_geom(Size(10, 0.1), app.static_space)))
+	app.objects[1].append(gameobj.GameObj(Point(5, 10), geom=hull.BoxMold().make_geom(Size(10, 0.1), app.static_space)))
+	app.objects[1].append(gameobj.GameObj(Point(10, 7.5), 0.25, geom=hull.BoxMold().make_geom(Size(5, 0.1), app.static_space)))
+	app.objects[1].append(gameobj.GameObj(Point(7.5, 5), geom=hull.BoxMold().make_geom(Size(5, 0.1), app.static_space)))
+	app.objects[1].append(gameobj.GameObj(Point(5, 2.5), 0.25, geom=hull.BoxMold().make_geom(Size(5, 0.1), app.static_space)))
 	
 	app.objects[1][0].drives.append(image.DTiledImage("pattern.png", Size(5, 0.1), Size(1, 0.25)))
 	app.objects[1][1].drives.append(image.DTiledImage("pattern.png", Size(10, 0.1), Size(1, 0.25)))
@@ -106,7 +106,7 @@ for i in range(runs):
 		
 	app.objects.append(TrackerList())
 	
-	app.objects[2].append(gameobj.GameObj(Point(2.2, 2.5), 0, sphere_body(1, 0.75), hull.BoxHull().make_geom(Size(1.5, 0.08))))
+	app.objects[2].append(gameobj.GameObj(Point(2.2, 2.5), 0, sphere_body(1, 0.75), hull.BoxMold().make_geom(Size(1.5, 0.08))))
 	app.objects[2][0].drives.append(image.DBlock(colors.purple, Size(1.5, 0.08)))
 	#app.objects[2][0].drives.append(magnet.DRectMagnet(-0.1, Size(1.5, 0.2), loss=0.06))
 	#app.objects[2][0].drives.append(magnet.DLineMagnet(-0.1, Point(0.75, 0)))
@@ -115,13 +115,13 @@ for i in range(runs):
 	app.objects[2][0].drives.append(image.DImage("screw.png", Size(0.1, 0.1), rot_offset = -1))
 	
 	app.objects[2].append(gameobj.LimbedGameObj(body = sphere_body(1, 0.6)))
-	app.objects[2][1].geom = hull.BoxHull().make_geom(Size(0.5, 0.5), app.objects[2][1].space)
+	app.objects[2][1].geom = hull.BoxMold().make_geom(Size(0.5, 0.5), app.objects[2][1].space)
 	app.objects[2][1].pos = Point(4.5, 9)
 	app.objects[2][1].drives.append(image.DImage("left.png", Size(0.5, 0.5)))
 	app.objects[2][1].add_limb(gameobj.GameObj(
 		Point(4.5, 8.65),
 		body=sphere_body(1, 0.375),
-		geom=hull.BoxHull().make_geom(Size(0.2, 0.5), app.objects[2][1].space),
+		geom=hull.BoxMold().make_geom(Size(0.2, 0.5), app.objects[2][1].space),
 		drives=[image.DBlock(colors.gray, Size(0.2, 0.5))])
 	, Point(0, -0.18))
 	app.objects[2][1].postdrives.append(image.DImage("screw.png", Size(0.1, 0.1), Point(0, -0.18)))
@@ -129,7 +129,7 @@ for i in range(runs):
 	app.objects[2].append(gameobj.GameObj(
 		Point(6, 9.4),
 		body=sphere_body(1, 0.4),
-		geom=hull.BoxHull().make_geom(Size(0.5, 0.5)),
+		geom=hull.BoxMold().make_geom(Size(0.5, 0.5)),
 		drives=[sprite.DSprite("a",
 			{
 				"one":image.DImage("1.png", Size(0.5, 0.5)),
@@ -165,7 +165,7 @@ for i in range(runs):
 	
 	#app.objects[6].append(gameobj.GameObj(drives = [light.DLightField(0.5)]))
 
-	app.ui.draw_hulls = True
+	app.ui.draw_geoms = True
 	
 	#profile.run('app.run()', 'satyrprof')
 	app.run()
