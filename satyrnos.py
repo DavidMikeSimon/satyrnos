@@ -142,22 +142,28 @@ for i in range(runs):
 			}
 		)]
 	))
-
+	
 	app.objects[2].append(gameobj.GameObj(
-		Point(3.3, 5),
-		body=sphere_body(1, 0.5),
-		geom=geommold.ComplexGeomMold("splat.png").make_geom(Size(1.5, 1.5)),
-		drives=[image.DImage("splat.png", Size(1.5, 1.5))]))
+		Point(2.5, 1),
+		body=sphere_body(0.2, 0.5),
+		geom=geommold.CircleGeomMold("ball.png").make_geom(Size(1, 1)),
+		drives=[image.DImage("ball.png", Size(1, 1))]))
+	#app.objects[3][0].drives.append(camera.DCameraLead(bounds=Rect(Point(5, 5), Size(7, 8))))
 	
 	app.objects.append(TrackerList())
 	
 	app.objects[3].append(gameobj.GameObj(
-		Point(2.5, 1),
-		body=sphere_body(1, 0.5),
-		geom=geommold.CircleGeomMold("ball.png").make_geom(Size(1, 1)),
-		drives=[image.DImage("ball.png", Size(1, 1))]))
-	#app.objects[3][0].drives.append(camera.DCameraLead(bounds=Rect(Point(5, 5), Size(7, 8))))
+		Point(3.3, 5),
+		body=sphere_body(0.5, 0.5),
+		geom=geommold.ComplexGeomMold("pizzaship.png").make_geom(Size(1.0, 1.0), outer = 1, inner = 1),
+		drives=[image.DImage("pizzaship.png", Size(1.0, 1.0))]))
 	app.objects[3][0].drives.append(camera.DCameraDirect())
+	
+	app.objects[3].append(gameobj.GameObj(
+		Point(3.3, 5),
+		body=sphere_body(0.05, 0.5),
+		geom=geommold.CircleGeomMold("ball.png").make_geom(Size(0.05, 0.05)),
+		drives=[image.DImage("ball.png", Size(0.05, 0.05))]))
 	
 	app.objects.append(TrackerList())
 	app.objects.append(TrackerList())

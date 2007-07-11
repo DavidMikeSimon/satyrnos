@@ -34,7 +34,7 @@ class Interface:
 		doesn't screw up calculations.
 	pixm -- Number of screen pixels per game meter.
 		We always try and go for a 4x3 meter display.
-	draw_geoms -- If set to True, then GameObj's draw method also calls x.draw_drive.draw() for every geom x.
+	draw_geoms -- If set to True, then GameObjs draw collision geom outlines and other drives involving geoms do similar things
 	cons -- An instance of console.Console used for in-game debugging.
 	watchers -- A sequence of console.Watchers used for in-game debugging.
 	camera -- Where, in game meters, the view is centered.
@@ -77,7 +77,7 @@ class Interface:
 			self.screen = pygame.display.set_mode(self.winsize, DOUBLEBUF | OPENGL)
 			self.clock = pygame.time.Clock()
 			
-			glutInit(sys.argv) #Since we don't use GLUT for anything but drawing text, cmd line arguments are ignored anyways
+			glutInit(sys.argv) # GLUT is only used for drawing text
 			
 			glViewport(0, 0, self.winsize[0], self.winsize[1])
 			gluOrtho2D(0.0, self.winsize[0], self.winsize[1], 0.0) #This way makes the y-axis go in the direction we want

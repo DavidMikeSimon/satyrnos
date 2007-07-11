@@ -1,9 +1,9 @@
 from __future__ import division
 
-import pygame, math, os, ode, cPickle
+import pygame, math, os, ode, cPickle, sys
 from OpenGL.GL import *
 
-import app, image, collision
+import app, image, collision, colors
 from geometry import *
 
 # Constants used in mold generation
@@ -30,7 +30,7 @@ def _load_cache(cache_name, img):
 	
 	if os.access(cachepath, os.F_OK):
 		c_mtime = os.stat(cachepath).st_mtime
-		if c_mtime < os.stat(imgpath).st_mtime:
+		if c_mtime > os.stat(imgpath).st_mtime:
 			cachef = open(cachepath, "r")
 			cache = cPickle.load(cachef)
 			cachef.close()
@@ -107,7 +107,7 @@ class CircleGeomMold(GeomMold):
 		rad = self.radius*((size[0]+size[1])/2.0)
 		geom = ode.GeomSphere(space, rad)
 		geom.mold = self
-		geom.draw_drive = image.DCircle(rad)
+		geom.draw_drives = [image.DCircle(rad)]
 		geom.geom_args = (size, space, coll_props)
 		
 		if (coll_props == -1): geom.coll_props = collision.Props()
@@ -126,7 +126,7 @@ class BoxGeomMold(GeomMold):
 		if (space == None): space = app.dyn_space
 		geom = ode.GeomBox(space, (size[0], size[1], 1))
 		geom.mold = self
-		geom.draw_drive = image.DWireBlock(size = size)
+		geom.draw_drives = [image.DWireBlock(size = size)]
 		geom.geom_args = (size, space, coll_props)
 		
 		if (coll_props == -1): geom.coll_props = collision.Props()
@@ -139,29 +139,72 @@ class ComplexGeomMold(GeomMold):
 	"""Creates a (potentially concave) polygonal mold for an ODE triangle mesh.
 	
 	Data attributes:
-	vertices -- A list of Points which define the vertices of the polygon. (0,0) is the center of the object.
+	outer_paths -- A list of lists of Points which define the outer edges of the polygon. (0,0) is the center of the object.
+	inner_paths -- Like outer_paths, but for the inner edges.
 	"""
+
+	def _minimize(self, hull):
+		if len(hull) > 3:
+			# Create an approximate hull of lines based on the border pixels
+			# We'll do this by subtracting superfluous points from the hull list
+			death_list_five = [] #Indices for points that will be removed
+			start = 0
+			while start < (len(hull)-2):
+				for end in range(len(hull)-1, start+1, -1):
+					line = Line(hull[start], hull[end])
+					cullable = True
+					for mid in range(start+1, end):
+						if line.nearest_pt_to(hull[mid]).dist_to(hull[mid]) > MAX_LINE_OFF:
+							cullable = False
+							break
+					if cullable:
+						for c in range(start+1, end):
+							death_list_five.append(c)
+						start = end-1
+						break
+				start += 1
+			
+			death_list_five.reverse() # Keeps us from tripping up the numbering of lower-numbered death-listed pixels
+			for i in death_list_five:
+				del hull[i]
+		
+		# The starting and ending points are arbitrary, and will never be 'mid' in the above loop
+		# But, they still might be cullable
+		if len(hull) > 4:
+			# Check if both first and last are cullable, or just one or the other
+			if (
+			Line(hull[-2],hull[1]).nearest_pt_to(hull[-1]).dist_to(hull[-1]) <= MAX_LINE_OFF and
+			Line(hull[-2],hull[1]).nearest_pt_to(hull[0]).dist_to(hull[0]) <= MAX_LINE_OFF
+			):
+				del hull[0]
+				del hull[-1]
+			elif Line(hull[-1], hull[1]).nearest_pt_to(hull[0]).dist_to(hull[0]) <= MAX_LINE_OFF:
+				del hull[0]
+			elif Line(hull[-2], hull[0]).nearest_pt_to(hull[-1]).dist_to(hull[-1]) <= MAX_LINE_OFF:
+				del hull[-1]
+		
 	
 	def _calc(self, surf):
 		hull = []
 		surf.lock()
 		
-		# Figure out which pixels are border pixels. Such pixels are:
-		# 1. Fairly transparent
-		# 2. Next to one edge of the image, or next to another border pixel
-		border_pixels = set()
-		seen = set()
+		# Figure out which pixels are fairly transparent, subdivided into two groups:
+		# 1. Outer : Touching the edge, or next to another pixel that is Outer
+		# 2. Inner : Not touching the edge, or next to another pixel that is Inner
+		inner_trans = set()
+		outer_trans = set()
 		for x in range(surf.get_width()):
 			for y in range(surf.get_height()):
 				pos = (x, y)
 				
+				if pos in inner_trans or pos in outer_trans:
+					continue
+				
 				if surf.get_at(pos)[3] > MAX_TRANSPARENT_ALPHA:
 					continue
 				
-				if pos in border_pixels:
-					continue
-				
 				edge_touching = False
+				seen = set()
 				queue = set()
 				queue.add(pos)
 				while len(queue) > 0:
@@ -174,100 +217,92 @@ class ComplexGeomMold(GeomMold):
 					seen.add(q)
 				
 				if edge_touching:
-					for s in seen: border_pixels.add(s)
+					for s in seen: outer_trans.add(s)
+				else:
+					for s in seen: inner_trans.add(s)
 		
 		# Find all the edges that are between a non-transparent pixel and an image border or a border pixel 
-		hull_edges = set()
+		inner_edges = set()
+		outer_edges = set()
 		for x in range(surf.get_width()):
 			for y in range(surf.get_height()):
 				pos = (x, y)
 				
+				# Make sure this is a non-transparent pixel
 				if surf.get_at(pos)[3] <= MAX_TRANSPARENT_ALPHA:
 					continue
 				
 				for n in ((pos[0]+1, pos[1]), (pos[0]-1, pos[1])):
-					if n[0] < 0 or n[0] >= surf.get_width() or n in border_pixels:
+					if n[0] < 0 or n[0] >= surf.get_width() or n in outer_trans or n in inner_trans:
 						mid = (pos[0]+n[0])/2
-						hull_edges.add(Line(Point(mid, n[1]-0.5), Point(mid, n[1]+0.5)))
+						eline = Line(Point(mid, n[1]-0.5), Point(mid, n[1]+0.5))
+						if n in inner_trans:
+							inner_edges.add(eline)
+						else:
+							outer_edges.add(eline)
 				for n in ((pos[0], pos[1]+1), (pos[0], pos[1]-1)):
-					if n[1] < 0 or n[1] >= surf.get_height() or n in border_pixels:
+					if n[1] < 0 or n[1] >= surf.get_height() or n in outer_trans or n in inner_trans:
 						mid = (pos[1]+n[1])/2
-						hull_edges.add(Line(Point(n[0]-0.5, mid), Point(n[0]+0.5, mid)))
+						eline = Line(Point(n[0]-0.5, mid), Point(n[0]+0.5, mid))
+						if n in inner_trans:
+							inner_edges.add(eline)
+						else:
+							outer_edges.add(eline)
 		
 		# We're done gathering information from the surface, now we need to organize it
 		surf.unlock()
-
-		# Sequence the list of edges into one list of Points that wraps around back to the first one
-		first_victim = hull_edges.pop()
-		vertices = [first_victim.a, first_victim.b]
-		while (len(hull_edges) > 0):
-			last = vertices[len(vertices)-1]
-			to_remove = None
-			for e in hull_edges:
-				if last.near_to(e.a):
-					to_remove = e
-					vertices.append(e.b)
-					break
-				elif last.near_to(e.b):
-					to_remove = e
-					vertices.append(e.a)
-					break
-				
-			if to_remove != None:
-				hull_edges.remove(to_remove)
-			else:
-				print "Aborting due to dead-end pixel in complex hull: (%f, %f)" % last
-				sys.exit()
 		
-		first = vertices[0]
-		last = vertices[-1]
-		if not first.near_to(last):
-			print "Aborting due to lack of wraparound in complex hull"
-			sys.exit()
-		else:
-			vertices.pop()
-		
-		if len(vertices) > 3:
-			# Create an approximate hull of lines based on the border pixels
-			# We'll do this by subtracting superfluous points from the vertices list
-			death_list_five = [] #Indices for points that will be removed
-			start = 0
-			while start < (len(vertices)-2):
-				for end in range(len(vertices)-1, start+1, -1):
-					line = Line(vertices[start], vertices[end])
-					cullable = True
-					for mid in range(start+1, end):
-						if line.nearest_pt_to(vertices[mid]).dist_to(vertices[mid]) > MAX_LINE_OFF:
-							cullable = False
-							break
-					if cullable:
-						for c in range(start+1, end):
-							death_list_five.append(c)
-						start = end-1
+		# Sequence the edges into complete hulls (of points) that wrap back around
+		outer_hulls = []
+		inner_hulls = []
+		for (edges, hulls) in ((outer_edges, outer_hulls), (inner_edges, inner_hulls)):
+			while (len(edges) > 0):
+				# Figure out if we've got any incomplete hulls that we can add an edge onto
+				# An incomplete hull is one that doesn't wrap around
+				dest_hull = None
+				for hull in hulls:
+					if len(hull) >= 3 and not hull[-1].near_to(hull[0]):
+						dest_hull = hull
 						break
-				start += 1
+				
+				if dest_hull == None:
+					# Looks like we'll have to create a new hull; let's just pick an edge at random
+					hulls.append([])
+					dest_hull = hulls[-1]
+					victim = edges.pop()
+					dest_hull.append(victim.a)
+					dest_hull.append(victim.b)
+				
+				last = dest_hull[-1]
+				to_remove = None
+				for e in edges:
+					if last.near_to(e.a):
+						to_remove = e
+						dest_hull.append(e.b)
+						break
+					elif last.near_to(e.b):
+						to_remove = e
+						dest_hull.append(e.a)
+						break
+				
+				if to_remove != None:
+					edges.remove(to_remove)
+				else:
+					print "Aborting due to dead-end pixel in complex hull: %s" % last
+					sys.exit()
 			
-			death_list_five.reverse() # Keeps us from tripping up the numbering of lower-numbered death-listed pixels
-			for i in death_list_five:
-				del vertices[i]
-			
-			# The starting and ending points are arbitrary, and will never be 'mid' in the above loop
-			# But, they still might be cullable
-			if len(vertices) > 4:
-				# Check if both first and last are cullable, or just one or the other
-				line = Line(vertices[-2],vertices[1])
-				if line.nearest_pt_to(vertices[-1]).dist_to(vertices[-1]) <= MAX_LINE_OFF and line.nearest_pt_to(vertices[0]).dist_to(vertices[0]) <= MAX_LINE_OFF:
-					del vertices[0]
-					del vertices[-1]
-				elif Line(vertices[-1], vertices[1]).nearest_pt_to(vertices[0]).dist_to(vertices[0]) <= MAX_LINE_OFF:
-					del vertices[0]
-				elif Line(vertices[-2], vertices[0]).nearest_pt_to(vertices[-1]).dist_to(vertices[-1]) <= MAX_LINE_OFF:
-					del vertices[-1]
+			for hull in hulls:
+				#The last point will be right on top of the first, so it can be removed
+				hull.pop()
+				
+				# Remove unneeded points
+				self._minimize(hull)
+				
+				# Translate/scale the hull so that (0, 0) is the center of the image and it has a size of (1, 1)
+				for i in range(0, len(hull)):
+					hull[i] = ((hull[i][0]+0.5)/surf.get_width() - 0.5, (hull[i][1]+0.5)/surf.get_height() - 0.5)
 		
-		# Translate/scale the vertices so that (0, 0) is the center of the image and it has a size of (1, 1)
-		w = float(surf.get_width())
-		h = float(surf.get_height())
-		return {"outer" : [[((v[0]+0.5)/w - 0.5, (v[1]+0.5)/h - 0.5) for v in vertices]], "inner" : []}
+		return {"outer" : outer_hulls, "inner" : inner_hulls}
 	
 	def __init__(self, img):
 		cache_name = "ComplexGeomMold__" + img
@@ -280,25 +315,45 @@ class ComplexGeomMold(GeomMold):
 		self.inner_paths = cache["inner"]
 		self.outer_paths = cache["outer"]
 	
-	def make_geom(self, size, space = None, coll_props = -1):
+	def make_geom(self, size, space = None, coll_props = -1, outer = 1, inner = 0):
 		if (space == None): space = app.dyn_space
 		
 		meshverts = []
-		for v in self.outer_paths[0]:
-			meshverts.append((v[0]*size[0], v[1]*size[1], -0.5))
-			meshverts.append((v[0]*size[0], v[1]*size[1], 0.5))
-		
 		meshtris = []
-		for x in range(0, len(meshverts), 2):
-			meshtris.append((x, (x+1)%len(meshverts), (x+3)%len(meshverts)))
-			meshtris.append((x, (x+2)%len(meshverts), (x+3)%len(meshverts)))
+		draw_drives = []
+		
+		def add_hull(hull):
+			verts = []
+			tris = []
+			
+			for p in hull:
+				verts.append((p[0]*size[0], p[1]*size[1], -0.5))
+				verts.append((p[0]*size[0], p[1]*size[1], 0.5))
+			for x in range(0, len(verts), 2):
+				tris.append((x, (x+1)%len(verts), (x+3)%len(verts)))
+				tris.append((x, (x+2)%len(verts), (x+3)%len(verts)))
+			
+			prev_verts = len(meshverts)
+			for v in verts:
+				meshverts.append(v)
+			for t in tris:	
+				meshtris.append((t[0]+prev_verts, t[1]+prev_verts, t[2]+prev_verts))
+		
+		if outer:
+			for hull in self.outer_paths:
+				draw_drives.append(image.DPoly(hull))
+				add_hull(hull)
+		if inner:
+			for hull in self.inner_paths:
+				draw_drives.append(image.DPoly(hull, colors.green))
+				add_hull(hull)
 		
 		tdat = ode.TriMeshData()
-		tdat.build(meshverts, meshtris)
+		tdat.build(meshverts, meshtris)	
 		geom = ode.GeomTriMesh(tdat, space)
 		geom.mold = self
-		geom.draw_drive = image.DPoly([x[0:2] for x in meshverts])
-		geom.geom_args = (size, space, coll_props)
+		geom.draw_drives = draw_drives
+		geom.geom_args = (size, space, coll_props, outer, inner)
 		
 		if (coll_props == -1): geom.coll_props = collision.Props()
 		else: geom.coll_props = coll_props
