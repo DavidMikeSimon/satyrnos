@@ -6,13 +6,14 @@ HULL JUNK IN PROGRESS:
 
 Bugs:
 - Friction should decrease velocity
+- Things tend to fall through ComplexGeoms
+- Enforce particular winding order in ComplexGeom
 - Fuzzy GLUT text in Windows
 - GameObj._setBody needs to destroy old body
 - Why doesn't camera centering work perfectly?
 - Put the division fix into all modules
 - DCameraLead gets shakey when framerate dips (try with profiling to see)
 - Get ui.msecs from the main loop in app (better yet, vice versa)
-- Weirdness, extra bounding box on LimbedGameObjects when app.ui.draw_hulls is on
 
 Short term features:
 - Keep Geoms in Hulls in GameObjs, not Hulls in Geoms in GameObjs

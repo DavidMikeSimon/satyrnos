@@ -118,7 +118,7 @@ class DTiledImage(drive.Drive):
 
 
 class DWireBlock(drive.Drive):
-	"""Drive that draws a wire-frame block (borders and diagonals).
+	"""Drive that draws a wire-frame block (borders only).
 	
 	Data attributes:
 	color -- The color to draw the lines in.
@@ -146,9 +146,7 @@ class DWireBlock(drive.Drive):
 		(topleft, topright),
 		(bottomleft, bottomright),
 		(topleft, bottomleft),
-		(topright, bottomright),
-		(topleft, bottomright),
-		(topright, bottomleft)):
+		(topright, bottomright)):
 			glVertex2fv(pair[0])
 			glVertex2fv(pair[1])
 		glEnd()
@@ -163,7 +161,7 @@ class DBlock(drive.Drive):
 	"""
 	
 	def __init__(self, color = None, size = None, offset = None, rot_offset = 0):
-		"""Creates an DBlock. Given position and size are in meters."""
+		"""Creates a DBlock. Given position and size are in meters."""
 		super(DBlock, self).__init__(drawing = True, offset = offset, rot_offset = rot_offset)
 		
 		if color == None: self.color = colors.blue

@@ -5,6 +5,7 @@ import profile
 import ode
 
 import app
+import avatar
 import drive
 import gameobj
 import colors
@@ -153,17 +154,24 @@ for i in range(runs):
 	app.objects.append(TrackerList())
 	
 	app.objects[3].append(gameobj.GameObj(
-		Point(3.3, 5),
+		Point(3.3, 4),
 		body=sphere_body(0.5, 0.5),
-		geom=geommold.ComplexGeomMold("pizzaship.png").make_geom(Size(1.0, 1.0), outer = 1, inner = 1),
-		drives=[image.DImage("pizzaship.png", Size(1.0, 1.0))]))
+		geom=geommold.BoxGeomMold().make_geom(Size(0.2, 0.7)),
+		drives=[avatar.DAvatar()]))
 	app.objects[3][0].drives.append(camera.DCameraDirect())
 	
 	app.objects[3].append(gameobj.GameObj(
 		Point(3.3, 5),
-		body=sphere_body(0.05, 0.5),
-		geom=geommold.CircleGeomMold("ball.png").make_geom(Size(0.05, 0.05)),
-		drives=[image.DImage("ball.png", Size(0.05, 0.05))]))
+		body=sphere_body(0.5, 0.5),
+		geom=geommold.ComplexGeomMold("splat.png").make_geom(Size(1.0, 1.0), outer = 1, inner = 1),
+		drives=[image.DImage("splat.png", Size(1.0, 1.0))]))
+	app.objects[3][0].drives.append(camera.DCameraDirect())
+	
+	app.objects[3].append(gameobj.GameObj(
+		Point(3.3, 5),
+		body=sphere_body(0.1, 0.5),
+		geom=geommold.CircleGeomMold("ball.png").make_geom(Size(0.2, 0.2)),
+		drives=[image.DImage("ball.png", Size(0.2, 0.2))]))
 	
 	app.objects.append(TrackerList())
 	app.objects.append(TrackerList())

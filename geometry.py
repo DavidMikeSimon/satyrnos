@@ -161,11 +161,22 @@ class Point(_CoordLike, object):
 		If other is directly to the right of this point, then the angle is zero."""
 		return math.atan2(other[1]-self[1], other[0]-self[0])/(2*math.pi)
 	
+	def to_length(self, len = 1.0):
+		"""Returns a coord of a given length, but in the same direction."""
+		if len == 0.0:
+			return Point(0,0)
+		oldlen = self.dist_to(Point(0,0))
+		ret = Point(self[0], self[1])
+		if oldlen != 0.0:
+			ret[0] *= len/oldlen
+			ret[1] *= len/oldlen
+		return ret
+	
 	def rot(self, cen, ang):
-		"""Rotates this point around a center a given number of cw revolutions."""
+		"""Returns this point rotated around a center a given number of cw revolutions."""
 	
 		if abs(ang) < 0.000001:
-			return self
+			return copy.copy(self)
 		a = util.rev2rad(ang) #Convert to ccw radians
 		h = cen.dist_to(self) #Radius of circle
 		b = util.rev2rad(cen.ang_to(self))

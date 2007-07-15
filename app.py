@@ -98,49 +98,48 @@ def run(maxsteps = 0):
 	you have not called app.ui.open(), then the maxsteps argument is
 	required.
 	"""
-	
-	#Weird case: The display is down, so we're running as an invisible simulation, quick as possible
-	if not ui.opened:
-		if maxsteps == 0:
-			raise NotImplementedError, "If display isn't initialized via app.ui.open(), you must pass a maximum number of steps to app.run()"
-		for i in range(maxsteps):
-			_sim_step()
-		return maxsteps
-
-	#Normal case: The display is up, and we're running the game as a game
-	totalsteps = 0L    #Number of simulation steps we've ran
-	totalms = 0L       #Total number of milliseconds passed
-	willquit = 0       #Becomes 1 when we're ready to quit
-	while not willquit:
-		elapsedms = ui.clock.tick(ui.maxfps)
-		totalms += elapsedms
+	try:
+		#Weird case: The display is down, so we're running as an invisible simulation, quick as possible
+		if not ui.opened:
+			if maxsteps == 0:
+				raise NotImplementedError, "If display isn't initialized via app.ui.open(), you must pass a maximum number of steps to app.run()"
+			for i in range(maxsteps):
+				_sim_step()
+			return maxsteps
 		
-		#Figure out how many simulation steps we're doing this frame.
-		#Shouldn't be zero, since frames per second is the same as steps per second
-		#However, it's alright to be occasionally zero, since clock.tick is sometimes slightly off
-		steps = int(math.floor((totalms*ui.maxfps/1000)))-totalsteps
-		
-		#If we have a maximum number of steps, only go up to that amount
-		if maxsteps != 0 and steps + totalsteps > maxsteps:
-			steps = maxsteps - totalsteps
-		
-		#Run the simulation the desired number of steps
-		for i in range(steps):
-			_sim_step()
-		totalsteps += steps
-		
-		#Deal with input from the player, quit if requested
-		try:
-			ui.proc_input()
-		except QuitException:
-			willquit = 1
-		
-		#Draw everything, if the display is enabled
-		if (ui.opened):
+		#Normal case: The display is up, and we're running the game as a game
+		totalsteps = 0L    #Number of simulation steps we've ran
+		totalms = 0L       #Total number of milliseconds passed
+		while True:
+			elapsedms = ui.clock.tick(ui.maxfps)
+			totalms += elapsedms
+			
+			#Figure out how many simulation steps we're doing this frame.
+			#Shouldn't be zero, since frames per second is the same as steps per second
+			#However, it's alright to be occasionally zero, since clock.tick is sometimes slightly off
+			steps = int(math.floor((totalms*ui.maxfps/1000)))-totalsteps
+			
+			#If we have a maximum number of steps, only go up to that amount
+			if maxsteps != 0 and steps + totalsteps > maxsteps:
+				steps = maxsteps - totalsteps
+			
+			#Run the simulation the desired number of steps
+			for i in range(steps):
+				_sim_step()
+			
+			totalsteps += steps
+			
+			#Draw everything, if the display is enabled
 			ui.draw_frame(objects)
-		
-		#If a limited-time simulation was requested, and we're done, then we're done
-		if maxsteps != 0 and totalsteps == maxsteps:
-			break
+			
+			#Handle general UI input (character control is in avatar.py)
+			#Since this pygame.event.get()s everything, it also takes care of ignoring unhandled events
+			ui.proc_input()
+			
+			#If a limited-time simulation was requested, and we're done, then we're done
+			if maxsteps != 0 and totalsteps == maxsteps:
+				break
+	except QuitException:
+		pass
 			
 	return totalsteps

@@ -153,41 +153,15 @@ class Interface:
 		pygame.display.flip()
 	
 	def proc_input(self):
-		"""Looks for input from the keyboard/joystick/etc, does the appropriate thing.
-	
-		Throws an app.QuitException if user has requested that the game quit.
+		"""Empties the event queue, does the appropriate thing on general app-related input.
+		
+		Throws an app.QuitException if user has requested that the game quit (i.e. by closing the window)
 		"""
-		#Collect keyboard events
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				raise app.QuitException
-			
-			if event.type == KEYDOWN:
+			else:
 				self.cons.handle(event)
-				if self.cons.active == 0:
-					if event.key == K_w:
-						app.objects[3][0].body.addForce((0, -20, 0))
-					elif event.key == K_a:
-						app.objects[3][0].body.addForce((-20, 0, 0))
-					elif event.key == K_s:
-						app.objects[3][0].body.addForce((0, 20, 0))
-					elif event.key == K_d:
-						app.objects[3][0].body.addForce((20, 0, 0))
-					elif event.key == K_c:
-						app.objects[3][0].body.addForce((200, 0, 0))
-					elif event.key == K_q:
-						app.objects[3][0].body.addTorque((0, 0, -4))
-					elif event.key == K_e:
-						app.objects[3][0].body.addTorque((0, 0, 4))
-					elif event.key == K_r:
-						app.objects[2][0].body.addTorque((0, 0, 40))
-					elif event.key == K_f:
-						app.objects[2][0].freeze()
-						app.objects[3][0].freeze()
-					elif event.key == K_t:
-						app.objects[3][0].pos = Point(2.5, 1)
-					elif event.key == K_p:
-						app.objects[2][2].drives[0].playing = not app.objects[2][2].drives[0].playing
 	
 	def close(self):
 		"""If display window is open, destroys all data attributes and closes the display window.

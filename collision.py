@@ -20,7 +20,7 @@ def collision_cb(contactgroup, geom1, geom2):
 class Props:
 	"""Defines the collision properties of some object.
 		
-	The reason for the special exception is because two objects that
+	The basis of the intersec_pri stuff it that is that two objects that
 	collide physically may require either a ContactJoint between them if they've
 	got equal collision priority, or may require a ContactJoint between the world
 	and the one with lesser priority. There's no reason I can think of now
