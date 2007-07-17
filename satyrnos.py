@@ -160,18 +160,18 @@ for i in range(runs):
 		drives=[avatar.DAvatar()]))
 	app.objects[3][0].drives.append(camera.DCameraDirect())
 	
-	app.objects[3].append(gameobj.GameObj(
-		Point(3.3, 5),
-		body=sphere_body(0.5, 0.5),
-		geom=geommold.ComplexGeomMold("splat.png").make_geom(Size(1.0, 1.0), outer = 1, inner = 1),
-		drives=[image.DImage("splat.png", Size(1.0, 1.0))]))
-	app.objects[3][0].drives.append(camera.DCameraDirect())
+#	app.objects[3].append(gameobj.GameObj(
+#		Point(3.3, 5),
+#		body=sphere_body(0.5, 0.5),
+#		geom=geommold.ComplexGeomMold("pizzaship.png").make_geom(Size(1.0, 1.0), outer = 1, inner = 1),
+#		drives=[image.DImage("pizzaship.png", Size(1.0, 1.0))]))
+#	app.objects[3][0].drives.append(camera.DCameraDirect())
 	
 	app.objects[3].append(gameobj.GameObj(
 		Point(3.3, 5),
 		body=sphere_body(0.1, 0.5),
-		geom=geommold.CircleGeomMold("ball.png").make_geom(Size(0.2, 0.2)),
-		drives=[image.DImage("ball.png", Size(0.2, 0.2))]))
+		geom=geommold.CircleGeomMold("ball.png").make_geom(Size(0.1, 0.1)),
+		drives=[image.DImage("ball.png", Size(0.1, 0.1))]))
 	
 	app.objects.append(TrackerList())
 	app.objects.append(TrackerList())
