@@ -47,7 +47,7 @@ class DAvatar(drive.Drive):
 				"crouch-move":sprite.DSprite.Anim([("crouch-move", 100)], "REPEAT"),
 				"crouch":sprite.DSprite.Anim([("crouch", 100)], "REPEAT"),
 				"crouch-to-stand":sprite.DSprite.Anim([("crouch-to-stand", 100)], "REPEAT"),
-				"float-boost":sprite.DSprite.Anim([("float-boost", 100)], "REPEAT"),
+				"float-boost":sprite.DSprite.Anim([("float-boost", 300)], "float"),
 				"float-charge":sprite.DSprite.Anim([("float-charge", 100)], "REPEAT"),
 				"float-daze":sprite.DSprite.Anim([("float-daze", 100)], "REPEAT"),
 				"float-flip":sprite.DSprite.Anim([("float-flip", 100)], "REPEAT"),
@@ -72,7 +72,8 @@ class DAvatar(drive.Drive):
 	
 	def _step(self, obj):
 		# Add strong angular drag; Satyrn has a tendency to make himself stop rotating
-		# TODO: Implement this
+		angVel = obj.body.getAngularVel()[2]
+		obj.body.addTorque((0, 0, -angVel/4))
 		
 		# Figure out which direction the user is pressing in
 		push_vec = Point(0, 0)
@@ -85,26 +86,39 @@ class DAvatar(drive.Drive):
 		if app.keys[K_RIGHT]:
 			push_vec[0] = 1
 		
+		# Figure out if the player just released the boost key
+		boost_released = False
+		for event in app.events:
+			if event.type == KEYUP and event.key == K_c:
+				# If the charge key was just released, then do a boost
+				boost_released = True
+				break
+		
 		if app.keys[K_c]:
 			# If the charge key is held down, then arrow keys just allow finetuning direction
+			# FIXME: Have a delay on this somehow, so that tapping doesn't cause the charge animation
 			self.sprite.cur_anim = "float-charge"
 		else:
+			if self.sprite.cur_anim == "float-charge":
+				self.sprite.cur_anim = "float"
+			
 			if push_vec[0] != 0 or push_vec[1] != 0:
-				# If the charge key is not held down, then arrow keys are for movement
+				# If the boost key is not held down, then arrow keys are for movement
 				self.sprite.cur_anim = "float-boost"
 				
-				did_boost = False
-				for event in app.events:
-					if event.type == KEYUP and event.key == K_c:
-						# If the charge key was just released, then do a boost
-						did_boost = True
-						push_vec = push_vec.to_length(self.charge_push)
-						obj.body.addForce(push_vec.fake_3d_tuple())
-						break
-				if not did_boost:
+				if boost_released:
+					# Release a boost
+					push_vec = push_vec.to_length(self.charge_push)
+					obj.body.addForce(push_vec.fake_3d_tuple())
+				else:
 					# If we didn't do a boost, then arrow keys mean cruising
+					# FIXME: Cap velocity on this
 					push_vec = push_vec.to_length(self.cruise_push)
 					obj.body.addForce(push_vec.fake_3d_tuple())
-			else:
-				# Just floating along
-				self.sprite.cur_anim = "float"
+			elif boost_released:
+				# If the boost key was tapped without arrow keys, that is for stalling
+				# FIXME: This doesn't work in the way I expect
+				vel = obj.body.getLinearVel()
+				push_vec[0] = -vel[0]
+				push_vec[1] = -vel[1]
+				obj.body.addForce(push_vec.fake_3d_tuple())
