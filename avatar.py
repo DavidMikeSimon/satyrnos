@@ -90,7 +90,7 @@ class DAvatar(drive.Drive):
 			self.sprite.cur_anim = "float-charge"
 		else:
 			if push_vec[0] != 0 or push_vec[1] != 0:
-				# If the charge key is not held down, then arrow keys do movement
+				# If the charge key is not held down, then arrow keys are for movement
 				self.sprite.cur_anim = "float-boost"
 				
 				did_boost = False
