@@ -56,18 +56,18 @@ Gamepad with 6 buttons and stick or d-pad:
  |     D
 
 Ground movement:
-Stick away from ground: Push off slightly
+Stick away from ground: Stand. (Not pushing off; that's done with pulsing)
 Stick towards ground: Crouch, add friction
-Stick parallel to ground: Walk (using claws to stick)
-Stick diagonal (between towards ground and parallel to ground): Crawl (using claws to stick)
+Stick parallel to ground: Walk or crawl (using claws to stick)
 
 Air movement:
 Stick: Slow drift (only available to the degree that you've already got velocity, and it lowers total velocity)
 
 Pulsing:
 Tap B: Pulse to stop motion (if already still, does nothing and indicates that you're still)
+Tap B (on ground): Pulse away from ground (i.e. jump)
 Tap B + Direction: Pulse
-Hold B, Release B (+ optional direction): Charged pulse
+Hold B, Release B (+ optional direction): Aimed pulse
 Hold B, Push A: Cancel pulse charge
 
 Sword:

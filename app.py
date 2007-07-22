@@ -1,22 +1,84 @@
 from __future__ import division
-import ode, sys, math
+import ode, sys, math, pygame
+from pygame.locals import *
+from OpenGL.GL import *
+from OpenGL.GLU import *
+from OpenGL.GLUT import *
 
-import collision, util, interface
+import collision, util, console, resman, app
+from geometry import *
 
 #The ODE simulation
 odeworld = None
 static_space = None
 dyn_space = None
 
-#All the various game objects in a LayeredList (init() prepares this to have objects shoved in it)
+#All the various game objects in a LayeredList (sim_init() prepares this to have objects shoved in it)
 objects = None
 
-#Call this thing's open() method to actually show anything onscreen
-ui = interface.Interface()
+winsize = Size(1024, 768) #Size of the display window in pixels; TODO: should be a manual setting
+winmeters = Size(4, 3) #Size of the display window in meters
+maxfps = 60 #Max frames per second, and absolute sim-steps per second
+pixm = winsize[0]/winmeters[0] #Number of screen pixels per game meter
+camera = Point() #Where, in game meters, the view is centered
+screen = None #The PyGame screen
+clock = None #An instance of pygame.time.Clock() used for timing; use step count, not this for game-logic timing
+msecs = 0 #TODO: Make sure everything uses step counters, not wall-clock time
+draw_geoms = False #If True, then GameObjs and geom-related drives draw collision geom outlines
+cons = None #An instances of console.Console used for in-game debugging
+watchers = [] #A sequence of console.Watchers used for in-game debugging
 
 class QuitException:
 	"""Raised when something wants the main loop to end."""
 	pass
+
+def ui_init():
+	global screen, clock, cons, watchers
+
+	pygame.init()
+	pygame.display.set_caption('Satyrnos')
+	pygame.mouse.set_visible(0)
+	screen = pygame.display.set_mode(winsize, DOUBLEBUF | OPENGL)
+	clock = pygame.time.Clock()
+	
+	glutInit(sys.argv) # GLUT is only used for drawing text
+	
+	glViewport(0, 0, winsize[0], winsize[1])
+	gluOrtho2D(0.0, winsize[0], winsize[1], 0.0) #This makes the y-axis go in the direction we want
+	glClearColor(1.0, 1.0, 1.0, 0.0)
+	glEnable(GL_BLEND)
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+	
+	glEnable(GL_POINT_SMOOTH)
+	glEnable(GL_LINE_SMOOTH)
+	glEnable(GL_POLYGON_SMOOTH)
+	
+	glPointSize(4)
+	glLineWidth(2)
+	
+	cons = console.Console()
+	watchers = []
+	sys.stderr = cons.pseudofile
+	sys.stdout = cons.pseudofile
+	watchers.append(console.Watcher(pygame.Rect(20, winsize[1]/3-30, winsize[0]/4, winsize[1]/3-20)))
+	watchers.append(console.Watcher(pygame.Rect(20, 2*winsize[1]/3-30, winsize[0]/4, winsize[1]/3-20)))
+	watchers.append(console.Watcher(pygame.Rect(3*winsize[0]/4 - 20, winsize[1]/3-30, winsize[0]/4, winsize[1]/3-20)))
+	watchers.append(console.Watcher(pygame.Rect(3*winsize[0]/4 - 20, 2*winsize[1]/3-30, winsize[0]/4, winsize[1]/3-20)))
+
+def ui_deinit():
+	global screen, clock, cons, msec, watchers
+	
+	resman.unload_all()
+	pygame.quit()
+	
+	screen = None
+	clock = None
+	cons = None
+	msecs = 0
+	watchers = []
+	
+	sys.stderr = sys.__stderr__
+	sys.stdout = sys.__stdout__
 
 def sim_init():
 	"""Initializes the simulation, including ODE.
@@ -38,7 +100,6 @@ def sim_init():
 	3 - Player objects (there should really only be one of these) in space "dyn_space"
 	4 - Foreground objects (dust particles, etc) in space "dyn_space" or without geoms
 	5 - Non-colliding foreground imagery (close-up tree leaves, fog, etc), without geoms
-	6 - Light (a single GameObj with a single DLightField drive)
 	This way, drives can make reasonable guesses about where to append() newly created GameObjs.
 	
 	Objects in static_space do not collide with one another. Objects in dyn_space collide
@@ -85,29 +146,51 @@ def _sim_step():
 	for o in objects:
 		o.step()
 
+def _draw_frame():
+	global msecs
+	msecs = clock.get_time()
+	
+	glClear(GL_COLOR_BUFFER_BIT)
+	
+	glPushMatrix()
+	glScalef(pixm, pixm, 0) #OpenGL units are now game meters, not pixels
+	
+	#Mostly, this is used for setting the camera's position
+	for o in objects:
+		o.predraw()
+	
+	#Translate so that camera position is centered
+	glTranslatef(winsize[0]/(2*pixm) - camera[0], winsize[1]/(2*pixm) - camera[1], 0)
 
-def run(maxsteps = 0):
-	"""Runs the game. Returns the number of steps ran.
+	#This actually draws the objects
+	for o in objects:
+		o.draw()
 	
-	If given a non-zero argument, only runs for the given number of
-	simulation steps. To make it run for 5 seconds, pass a value of 500.
+	glPopMatrix()
 	
-	Before running this function, you have to have called app.sim_init().
-	You also can call app.ui.open() first if you want anything to appear
-	on-screen; otherwise, the simulation runs as quickly as possible. If
-	you have not called app.ui.open(), then the maxsteps argument is
-	required.
+	for w in watchers:
+		if (w.expr != None):
+			w.update()
+			w.draw()
+	
+	cons.draw()
+	
+	glFlush()
+	pygame.display.flip()
+
+def _proc_input():
+	for event in pygame.event.get():
+		if event.type == pygame.QUIT:
+			raise QuitException
+		else:
+			cons.handle(event)
+
+def run():
+	"""Runs the game. Returns nothing.
+
+	You have to call ui_init() and sim_init() before running this.
 	"""
 	try:
-		#Weird case: The display is down, so we're running as an invisible simulation, quick as possible
-		if not ui.opened:
-			if maxsteps == 0:
-				raise NotImplementedError, "If display isn't initialized via app.ui.open(), you must pass a maximum number of steps to app.run()"
-			for i in range(maxsteps):
-				_sim_step()
-			return maxsteps
-		
-		#Normal case: The display is up, and we're running the game as a game
 		totalsteps = 0L    #Number of simulation steps we've ran
 		totalms = 0L       #Total number of milliseconds passed
 		while True:
@@ -130,16 +213,14 @@ def run(maxsteps = 0):
 			totalsteps += steps
 			
 			#Draw everything, if the display is enabled
-			ui.draw_frame(objects)
+			_draw_frame(objects)
 			
 			#Handle general UI input (character control is in avatar.py)
 			#Since this pygame.event.get()s everything, it also takes care of ignoring unhandled events
-			ui.proc_input()
+			_proc_input()
 			
 			#If a limited-time simulation was requested, and we're done, then we're done
 			if maxsteps != 0 and totalsteps == maxsteps:
 				break
 	except QuitException:
 		pass
-			
-	return totalsteps

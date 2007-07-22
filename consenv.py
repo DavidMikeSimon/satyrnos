@@ -20,7 +20,6 @@ import gameobj
 from geometry import *
 import hull
 import image
-import interface
 import magnet
 import resman
 import sprite

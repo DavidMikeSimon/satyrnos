@@ -13,12 +13,7 @@ class DAvatar(drive.Drive):
 	Data attributes:
 	sprite -- The sprite being used to draw Satyrn himself at the moment.
 		This is also used to figure out some parts of Satyrn's current state.
-	charge_sprite1, charge_sprite2, charge_sprite3 -- Sprites used to draw
-		Satyrn charging up at various levels of charge.
-	charge_begin -- If charging up, this is the time at which the charging began.
-		It is -1 if not currently charging up.
-	charge_gap -- Number of ms between charge state jumps.
-	charge_push -- How hard to push for each charge state jump.
+	charge_push -- How hard to push for each pulse.
 	cruise_push -- How hard to push each step when directional buttons are
 		pressed without charging up.
 	cruise_speed -- The maximum linear speed (in terms of body.getLinearVel) that
@@ -27,12 +22,7 @@ class DAvatar(drive.Drive):
 	
 	def __init__(self):
 		super(DAvatar, self).__init__(drawing = True, stepping = True)
-		self.sprite = image.DImage("satyrnstick.png", Size(1.0, 1.0))
-		self.charge_sprite1 = image.DCircle(color = colors.red, radius = 0.3)
-		self.charge_sprite2 = image.DCircle(color = colors.red, radius = 0.4)
-		self.charge_sprite3 = image.DCircle(color = colors.red, radius = 0.5)
-		self.charge_begin = -1
-		self.charge_gap = 600
+		self.sprite = image.DImage("satyrn/float.png", Size(1.0, 1.0))
 		self.charge_push = 60
 		self.cruise_push = 1
 		self.cruise_speed = 1
@@ -51,10 +41,6 @@ class DAvatar(drive.Drive):
 	def _step(self, obj):
 		# Add strong angular drag; Satyrn has a tendency to make himself stop rotating
 		# TODO: Implement this
-		
-		# Stop here and don't handle input if the UI is down, or if something modal is up
-		if not app.ui.opened or app.ui.cons.active:
-			return
 		
 		# Make sure we're working with current key states
 		pygame.event.pump()
