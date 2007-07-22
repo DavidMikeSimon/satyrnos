@@ -54,7 +54,7 @@ class DSprite(drive.Drive):
 	
 	def _draw(self, obj):
 		if self.playing:
-			self.frame_time += app.ui.msecs
+			self.frame_time += app.msecs
 			while (self.frame_time > self.cur_frame_len()):
 				self.frame_time -= self.cur_frame_len()
 				self.frame += 1

@@ -276,8 +276,8 @@ class Console:
 	
 	def update_size(self):
 		"""Sets the EditBox and OutputBox rectangles to match the current window size."""
-		self.edit.rect = pygame.Rect(20, app.ui.winsize[1]-30, app.ui.winsize[0]-40, 15)
-		self.out.rect = pygame.Rect(20, 20, app.ui.winsize[0]-40, app.ui.winsize[1]-70)
+		self.edit.rect = pygame.Rect(20, app.winsize[1]-30, app.winsize[0]-40, 15)
+		self.out.rect = pygame.Rect(20, 20, app.winsize[0]-40, app.winsize[1]-70)
 	
 	def draw(self):
 		"""Draws the console. Nothing happens if the active flag is off."""
@@ -288,16 +288,16 @@ class Console:
 		self.edit.draw()
 		
 	def handle(self, event):
-		"""Handles an event, if possible. Commands aren't accepted if the active flag is off."""
+		"""Handles an event, if possible. Commands aren't accepted if the active flag is off."""	
+		if not self.active:
+			return
+			
 		if event.type != KEYDOWN:
 			return
 		
 		if event.unicode == "~" and self.active == 0:
 			self.active = 1
 			pygame.key.set_repeat(400, 30)
-			return
-		
-		if not self.active:
 			return
 
 		self.edit.handle(event)

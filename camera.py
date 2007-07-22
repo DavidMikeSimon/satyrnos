@@ -25,9 +25,9 @@ class DCameraDirect(drive.Drive):
 	def _predraw(self, obj):
 		wanted_pos = obj.pos + self.offset
 		if self.bounds == None:
-			app.ui.camera = wanted_pos
+			app.camera = wanted_pos
 		else:
-			app.ui.camera = self.bounds.nearest_pt_to(wanted_pos)
+			app.camera = self.bounds.nearest_pt_to(wanted_pos)
 
 class DCameraLead(drive.Drive):
 	"""Drive that changes app.camera to show where the object's going, without going outside bounds.
@@ -60,7 +60,7 @@ class DCameraLead(drive.Drive):
 		self._inited = False #So we know that _obj_pos is invalid the first run of _predraw
 	
 	def _predraw(self, obj):
-		time = app.ui.msecs/1000
+		time = app.msecs/1000
 		for axis in range(0, 2):
 			obj_vel = 0
 			if self._inited == True:

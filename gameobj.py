@@ -190,9 +190,9 @@ class GameObj(object):
 		"""Draws the object; pushes correct GL matrix, calls draw() on every drive, restores GL.
 		
 		Optionally, specify the draw_geoms argument. Set it to False to not draw a hall, True to draw it,
-		or None (that is, just leave it unset) to use the value from app.ui.draw_geoms."""
+		or None (that is, just leave it unset) to use the value from app.draw_geoms."""
 		if draw_geoms == None:
-			draw_geoms = app.ui.draw_geoms
+			draw_geoms = app.draw_geoms
 		glPushMatrix()
 		glTranslatef(self.pos[0], self.pos[1], 0)
 		if (self.ang > 0.00001):

@@ -27,20 +27,20 @@ import text
 from util import *
 
 def wset(num, expr):
-	"""Shortcut for 'app.ui.watchers[num].expr = expr'."""
-	app.ui.watchers[num].expr = expr
+	"""Shortcut for 'app.watchers[num].expr = expr'."""
+	app.watchers[num].expr = expr
 	
 def wclear(num = -1):
-	"""Clears all Watchers in app.ui.watchers, or just the specified one."""
+	"""Clears all Watchers in app.watchers, or just the specified one."""
 	if num == -1:
-		for w in app.ui.watchers:
+		for w in app.watchers:
 			w.expr = None
 	else:
-		app.ui.watchers[num].expr = None
+		app.watchers[num].expr = None
 
 def wfps(num = 0):
 	"""Sets a given watcher (#0 by default) to show the FPS."""
-	app.ui.watchers[num].expr = "app.ui.clock"
+	app.watchers[num].expr = "app.clock"
 
 def objs():
 	"""Short for 'print app.objects'"""

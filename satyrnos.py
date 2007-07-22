@@ -167,7 +167,7 @@ app.objects[3].append(gameobj.GameObj(
 app.objects.append(TrackerList())
 app.objects.append(TrackerList())
 
-#app.ui.draw_geoms = True
+#app.draw_geoms = True
 
 #profile.run('app.run()', 'satyrprof')
 app.run()

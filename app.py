@@ -16,7 +16,13 @@ dyn_space = None
 #All the various game objects in a LayeredList (sim_init() prepares this to have objects shoved in it)
 objects = None
 
-winsize = Size(1024, 768) #Size of the display window in pixels; TODO: should be a manual setting
+#Input events (from PyGame) which occurred this step
+events = []
+
+#Keys which were pressed at the time 'events' was compiled
+keys = []
+
+winsize = Size(1024, 768) #Size of the display window in pixels; TODO: should be a user setting
 winmeters = Size(4, 3) #Size of the display window in meters
 maxfps = 60 #Max frames per second, and absolute sim-steps per second
 pixm = winsize[0]/winmeters[0] #Number of screen pixels per game meter
@@ -179,48 +185,41 @@ def _draw_frame():
 	pygame.display.flip()
 
 def _proc_input():
+	global events, keys
+	events = []
 	for event in pygame.event.get():
+		cons.handle(event)
 		if event.type == pygame.QUIT:
 			raise QuitException
 		else:
-			cons.handle(event)
+			events.append(event)
+	keys = pygame.key.get_pressed()
 
 def run():
-	"""Runs the game. Returns nothing.
-
+	"""Runs the game.
+	
 	You have to call ui_init() and sim_init() before running this.
 	"""
 	try:
 		totalsteps = 0L    #Number of simulation steps we've ran
 		totalms = 0L       #Total number of milliseconds passed
 		while True:
-			elapsedms = ui.clock.tick(ui.maxfps)
+			elapsedms = clock.tick(maxfps)
 			totalms += elapsedms
 			
 			#Figure out how many simulation steps we're doing this frame.
-			#Shouldn't be zero, since frames per second is the same as steps per second
+			#In theory, shouldn't be zero, since frames per second is the same as steps per second
 			#However, it's alright to be occasionally zero, since clock.tick is sometimes slightly off
-			steps = int(math.floor((totalms*ui.maxfps/1000)))-totalsteps
-			
-			#If we have a maximum number of steps, only go up to that amount
-			if maxsteps != 0 and steps + totalsteps > maxsteps:
-				steps = maxsteps - totalsteps
+			steps = int(math.floor((totalms*maxfps/1000)))-totalsteps
 			
 			#Run the simulation the desired number of steps
 			for i in range(steps):
+				_proc_input()
 				_sim_step()
 			
 			totalsteps += steps
 			
-			#Draw everything, if the display is enabled
-			_draw_frame(objects)
-			
-			#Handle general UI input (character control is in avatar.py)
-			#Since this pygame.event.get()s everything, it also takes care of ignoring unhandled events
-			_proc_input()
-			
-			#If a limited-time simulation was requested, and we're done, then we're done
-			if maxsteps != 0 and totalsteps == maxsteps:
-				break
+			#Draw everything
+			_draw_frame()
 	except QuitException:
 		pass

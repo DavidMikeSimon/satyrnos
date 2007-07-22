@@ -29,6 +29,6 @@ class DTiledBg(image.DTiledImage):
 	def _draw(self, obj):
 		#Apply the parallax, do the draw, then revert the DTiledImage to its original state
 		old_offset = copy.copy(self.tileoffset)
-		self.tileoffset -= self.parallax*(app.ui.camera-obj.pos)
+		self.tileoffset -= self.parallax*(app.camera-obj.pos)
 		super(DTiledBg, self)._draw(obj)
 		self.tileoffset = old_offset

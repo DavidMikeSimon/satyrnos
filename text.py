@@ -24,6 +24,6 @@ class DDebugText(drive.Drive):
 	
 	def _draw(self, obj):
 		glColor3fv(self.color)
-		glRasterPos2f(-((len(self.text)*9)/2.0)/app.ui.pixm + 0.005, 5/app.ui.pixm) #This isn't strictly centered, but looks better
+		glRasterPos2f(-((len(self.text)*9)/2.0)/app.pixm + 0.005, 5/app.pixm) #This isn't strictly centered, but looks better
 		for c in (self.text):
 			glutBitmapCharacter(GLUT_BITMAP_9_BY_15, ord(c))
