@@ -205,19 +205,23 @@ def run():
 		totalms = 0L       #Total number of milliseconds passed
 		while True:
 			elapsedms = clock.tick(maxfps)
-			totalms += elapsedms
 			
-			#Figure out how many simulation steps we're doing this frame.
-			#In theory, shouldn't be zero, since frames per second is the same as steps per second
-			#However, it's alright to be occasionally zero, since clock.tick is sometimes slightly off
-			steps = int(math.floor((totalms*maxfps/1000)))-totalsteps
-			
-			#Run the simulation the desired number of steps
-			for i in range(steps):
+			if not cons.active:
+				totalms += elapsedms
+				
+				#Figure out how many simulation steps we're doing this frame.
+				#In theory, shouldn't be zero, since frames per second is the same as steps per second
+				#However, it's alright to be occasionally zero, since clock.tick is sometimes slightly off
+				steps = int(math.floor((totalms*maxfps/1000)))-totalsteps
+				
+				#Run the simulation the desired number of steps
+				for i in range(steps):
+					_proc_input()
+					_sim_step()
+				
+				totalsteps += steps
+			else:
 				_proc_input()
-				_sim_step()
-			
-			totalsteps += steps
 			
 			#Draw everything
 			_draw_frame()

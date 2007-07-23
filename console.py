@@ -289,9 +289,6 @@ class Console:
 		
 	def handle(self, event):
 		"""Handles an event, if possible. Commands aren't accepted if the active flag is off."""	
-		if not self.active:
-			return
-			
 		if event.type != KEYDOWN:
 			return
 		
@@ -299,6 +296,9 @@ class Console:
 			self.active = 1
 			pygame.key.set_repeat(400, 30)
 			return
+		
+		if not self.active:
+			return	
 
 		self.edit.handle(event)
 

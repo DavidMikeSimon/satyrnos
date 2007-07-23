@@ -74,5 +74,7 @@ class DSprite(drive.Drive):
 	def _get_cur_anim(self): return self._cur_anim
 	def _set_cur_anim(self, cur_anim):
 		self._cur_anim = cur_anim
+		self.playing = True
 		self.frame_time = 0
+		self.frame = 0
 	cur_anim = property(_get_cur_anim, _set_cur_anim)
