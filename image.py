@@ -19,8 +19,6 @@ class DImage(drive.Drive):
 		super(DImage, self).__init__(drawing = True, offset = offset, rot_offset = rot_offset)
 		self.tex = resman.Texture(imgfile)
 		self.size = size
-		self.offset = offset
-		self.rot_offset = rot_offset
 	
 	def __str__(self):
 		return super(DImage, self).__str__() + "(" + self.tex.filename + ")"

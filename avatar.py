@@ -13,6 +13,11 @@ class DAvatar(drive.Drive):
 	Data attributes:
 	sprite -- The sprite being used to draw Satyrn himself at the moment.
 		This is also used to figure out some parts of Satyrn's current state.
+	lantern -- Sprite used for lantern drawn behind Satyrn. Its offset
+		is from the center of the Satyrn sprite/object.
+	lantern_rot_speed -- How fast (in revolutions per second) the lantern
+		can move around Satyrn to the player-desired position. Purely
+		visual; lantern's actual position changes instantaneously.
 	charge_push -- How hard to push for each pulse.
 	stall_diff -- How much speed can be lost for each stall.
 	cruise_push -- How hard to push each step when directional buttons are
@@ -50,7 +55,8 @@ class DAvatar(drive.Drive):
 				"crouch":sprite.DSprite.Anim([("crouch", 100)], "REPEAT"),
 				"crouch-to-stand":sprite.DSprite.Anim([("crouch-to-stand", 100)], "REPEAT"),
 				"float-boost":sprite.DSprite.Anim([("float-boost", 350)], "float"),
-				"float-charge":sprite.DSprite.Anim([("float", 100), ("float-charge", 100)], "STOP"),
+				"float-charge-buffer":sprite.DSprite.Anim([("float", 100)], "float-charge"),
+				"float-charge":sprite.DSprite.Anim([("float-charge", 100)], "REPEAT"),
 				"float-cruise":sprite.DSprite.Anim([("float-cruise", 200)], "float"),
 				"float-daze":sprite.DSprite.Anim([("float-daze", 100)], "REPEAT"),
 				"float-flip":sprite.DSprite.Anim([("float-flip", 100)], "REPEAT"),
@@ -66,12 +72,22 @@ class DAvatar(drive.Drive):
 				"stand-to-crouch":sprite.DSprite.Anim([("stand-to-crouch", 100)], "REPEAT"),
 			}
 		)
+		self.lantern = sprite.DSprite("lantern",
+			{
+				"lantern":image.DImage("satyrn/lantern.png", Size(0.25, 0.25)),
+			}, {
+				"lantern":sprite.DSprite.Anim([("lantern", 100)], "REPEAT"),
+			},
+			offset = Point(-0.3, 0)
+		)
+		self.lantern_rot_speed = 2
 		self.charge_push = 60
 		self.stall_diff = 3
 		self.cruise_push = 2
 		self.cruise_speed = 1
 	
 	def _draw(self, obj):
+		self.lantern.draw(obj)
 		self.sprite.draw(obj)
 	
 	def _step(self, obj):
@@ -90,6 +106,21 @@ class DAvatar(drive.Drive):
 		if app.keys[K_RIGHT]:
 			push_vec[0] = 1
 		
+		if push_vec[0] != 0 or push_vec[1] != 0:
+			# Rotate the lantern around towards the opposite side of where the player is pressing
+			# That's because, conceptually, the player should think of the lantern as pushing Satyrn
+			cur_angle = Point(0,0).ang_to(self.lantern.offset) % 1
+			des_angle = Point(0,0).ang_to(-push_vec) % 1
+			dist = (des_angle - cur_angle) % 1
+			if 1-dist < dist:
+				dist = -(1-dist)
+			if abs(dist) > self.lantern_rot_speed/app.maxfps:
+				dir = 1
+				if dist < 0:
+					dir = -1
+				dist = dir * self.lantern_rot_speed/app.maxfps
+			self.lantern.offset = self.lantern.offset.rot(Point(0,0), dist)
+		
 		# Figure out if the player just released the boost key
 		boost_released = False
 		for event in app.events:
@@ -100,8 +131,9 @@ class DAvatar(drive.Drive):
 		
 		if app.keys[K_c]:
 			# If the charge key is held down, then arrow keys just allow finetuning direction
-			if self.sprite.cur_anim != "float-charge":
-				self.sprite.cur_anim = "float-charge"
+			# Float-charge-buffer is so that tapping boost key doesn't give us the charge animation
+			if self.sprite.cur_anim != "float-charge" and self.sprite.cur_anim != "float-charge-buffer":
+				self.sprite.cur_anim = "float-charge-buffer"
 		else:
 			# If we've stopped charging, then change the animation to show it
 			if self.sprite.cur_anim == "float-charge":

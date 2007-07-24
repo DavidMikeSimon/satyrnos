@@ -1,5 +1,4 @@
-import math
-import copy
+import math, copy
 from OpenGL.GL import *
 
 import app, colors, resman, util, image

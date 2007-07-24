@@ -29,8 +29,8 @@ class DSprite(drive.Drive):
 			self.frames = frames
 			self.next = next
 	
-	def __init__(self, cur_anim, library = None, anims = None, playing = True):
-		super(DSprite, self).__init__(drawing = True)
+	def __init__(self, cur_anim, library = None, anims = None, offset = None, rot_offset = 0, playing = True):
+		super(DSprite, self).__init__(drawing = True, offset = offset, rot_offset = rot_offset)
 		self.cur_anim = cur_anim
 		
 		if library == None: self.library = {}

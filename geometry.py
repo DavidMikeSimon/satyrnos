@@ -162,7 +162,7 @@ class Point(_CoordLike, object):
 		return math.atan2(other[1]-self[1], other[0]-self[0])/(2*math.pi)
 	
 	def to_length(self, len = 1.0):
-		"""Returns a coord of a given length, but in the same direction."""
+		"""Returns a coord of a given length, but in the same direction from the origin."""
 		if len == 0.0:
 			return Point(0,0)
 		oldlen = self.dist_to(Point(0,0))

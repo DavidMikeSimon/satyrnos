@@ -5,6 +5,8 @@ HULL JUNK IN PROGRESS:
 - Mold generators that load from images should use resman
 
 Bugs:
+- Rapidly tapping stall can seem like a continuous charge to DAvatar
+- Need a little delay so that simeltanous boost+direction doesn't stall
 - Friction should decrease velocity
 - Things tend to fall through ComplexGeoms
 - Enforce particular winding order in ComplexGeom
