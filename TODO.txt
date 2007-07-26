@@ -5,8 +5,6 @@ HULL JUNK IN PROGRESS:
 - Mold generators that load from images should use resman
 
 Bugs:
-- Rapidly tapping stall can seem like a continuous charge to DAvatar
-- Need a little delay so that simeltanous boost+direction doesn't stall
 - Friction should decrease velocity
 - Things tend to fall through ComplexGeoms
 - Enforce particular winding order in ComplexGeom
@@ -57,32 +55,30 @@ Gamepad with 6 buttons and stick or d-pad:
 ---   B C
  |     D
 
+
+Lantern:
+Push stick: Lantern moves towards opposite side (works on ground and in air)
+
 Ground movement:
-Stick away from ground: Stand. (Not pushing off; that's done with pulsing)
-Stick towards ground: Crouch, add friction
-Stick parallel to ground: Walk or crawl (using claws to stick)
+Stick away from ground: Stand, which allows walking and boosting to leave surface.
+Stick towards ground: Crouch, which does not allow walking or boosting to leave surface.
+Stick parallel to ground, while standing: Walk.
 
-Air movement:
-Stick: Slow drift (only available to the degree that you've already got velocity, and it lowers total velocity)
+Boosting:
+Hold D + Direction: Boost in that direction
+Hold D in air w/o Direction: Boost against velocity (stall)
+Hold D while standing w/o Direction: Boost away from ground
+Hold D while crouching w/o Direction: Boost towards ground
 
-Pulsing:
-Tap B: Pulse to stop motion (if already still, does nothing and indicates that you're still)
-Tap B (on ground): Pulse away from ground (i.e. jump)
-Tap B + Direction: Pulse
-Hold B, Release B (+ optional direction): Aimed pulse
-Hold B, Push A: Cancel pulse charge
-
-Sword:
-Tap C (+ optional direction, defaults to facing/vel direction): Sword attack
-Tap C Repeatedly: Sword combo attack
-Hold C, Release (+ optional direction): Charged sword attack
-Hold C, Push A: Cancel sword charge
+Sword (attacking with sword also changes orientation):
+B: Sword attack in current orientation
+B + Direction: Change orientation and sword attack
 
 Interaction:
-A: Use held object, or nearest interactive object if not holding anything
-D (+ optional direction, defaults to nearest interactable object): Grab
-D while holding object: Drop object (release with no force)
-D while holding object + direction: Throw held object
+A: Use held object
+C (+ optional direction, defaults to nearest interactable object): Grab
+C while holding object: Drop object (release with no force)
+C while holding object + direction: Throw held object
 
 Magnets and Gravity:
 L: Blue magnetic field
