@@ -13,6 +13,10 @@ class DAvatar(drive.Drive):
 	Data attributes:
 	sprite -- The sprite being used to draw Satyrn himself at the moment.
 		This is also used to figure out some parts of Satyrn's current state.
+	boost_field -- Sprite used for the field that appears when Satyrn uses
+		the lantern to move around.
+	attack_field -- SPrite used for the field that appears when Satyrn
+		attacks stuff with the lantern.
 	lantern -- Sprite used for lantern drawn behind Satyrn. Its offset
 		is from the center of the Satyrn sprite/object.
 	lantern_rot_speed -- How fast (in revolutions per second) the lantern
@@ -34,7 +38,6 @@ class DAvatar(drive.Drive):
 				"crouch":image.DImage("satyrn/crouch.png", Size(1.0, 1.0)),
 				"crouch-to-stand":image.DImage("satyrn/crouch-to-stand.png", Size(1.0, 1.0)),
 				"float-boost":image.DImage("satyrn/float-boost.png", Size(1.0, 1.0)),
-				"float-charge":image.DImage("satyrn/float-charge.png", Size(1.0, 1.0)),
 				"float-cruise":image.DImage("satyrn/float-cruise.png", Size(1.0, 1.0)),
 				"float-daze":image.DImage("satyrn/float-daze.png", Size(1.0, 1.0)),
 				"float-flip":image.DImage("satyrn/float-flip.png", Size(1.0, 1.0)),
@@ -43,7 +46,6 @@ class DAvatar(drive.Drive):
 				"float-rotate":image.DImage("satyrn/float-rotate.png", Size(1.0, 1.0)),
 				"float-zflip":image.DImage("satyrn/float-zflip.png", Size(1.0, 1.0)),
 				"stand-boost":image.DImage("satyrn/stand-boost.png", Size(1.0, 1.0)),
-				"stand-charge":image.DImage("satyrn/stand-charge.png", Size(1.0, 1.0)),
 				"stand-flip":image.DImage("satyrn/stand-flip.png", Size(1.0, 1.0)),
 				"stand-move":image.DImage("satyrn/stand-move.png", Size(1.0, 1.0)),
 				"stand":image.DImage("satyrn/stand.png", Size(1.0, 1.0)),
@@ -54,8 +56,6 @@ class DAvatar(drive.Drive):
 				"crouch":sprite.DSprite.Anim([("crouch", 100)], "REPEAT"),
 				"crouch-to-stand":sprite.DSprite.Anim([("crouch-to-stand", 100)], "REPEAT"),
 				"float-boost":sprite.DSprite.Anim([("float-boost", 350)], "float"),
-				"float-charge-buffer":sprite.DSprite.Anim([("float", 100)], "float-charge"),
-				"float-charge":sprite.DSprite.Anim([("float-charge", 100)], "REPEAT"),
 				"float-cruise":sprite.DSprite.Anim([("float-cruise", 200)], "float"),
 				"float-daze":sprite.DSprite.Anim([("float-daze", 100)], "REPEAT"),
 				"float-flip":sprite.DSprite.Anim([("float-flip", 100)], "REPEAT"),
@@ -64,11 +64,27 @@ class DAvatar(drive.Drive):
 				"float-rotate":sprite.DSprite.Anim([("float-rotate", 100)], "REPEAT"),
 				"float-zflip":sprite.DSprite.Anim([("float-zflip", 100)], "REPEAT"),
 				"stand-boost":sprite.DSprite.Anim([("stand-boost", 100)], "REPEAT"),
-				"stand-charge":sprite.DSprite.Anim([("stand-charge", 100)], "REPEAT"),
 				"stand-flip":sprite.DSprite.Anim([("stand-flip", 100)], "REPEAT"),
 				"stand-move":sprite.DSprite.Anim([("stand-move", 100)], "REPEAT"),
 				"stand":sprite.DSprite.Anim([("stand", 100)], "REPEAT"),
 				"stand-to-crouch":sprite.DSprite.Anim([("stand-to-crouch", 100)], "REPEAT"),
+			}
+		)
+		self.field = sprite.DSprite("null",
+			{
+				"null":drive.Drive(),
+				"field-attack-early":image.DImage("satyrn/field-attack-early.png", Size(2.0, 2.0)),
+				"field-attack":image.DImage("satyrn/field-attack.png", Size(2.0, 2.0)),
+				"field-boost-attack-early":image.DImage("satyrn/field-boost-attack-early.png", Size(2.0, 2.0)),
+				"field-boost-attack":image.DImage("satyrn/field-boost-attack.png", Size(2.0, 2.0)),
+				"field-boost":image.DImage("satyrn/field-boost.png", Size(1.0, 1.0))
+			}, {
+				"null":sprite.DSprite.Anim([("null"), 100)], "REPEAT"),
+				"field-attack-early":sprite.DSprite.Anim([("field-attack-early"), 100)], "REPEAT"),
+				"field-attack":sprite.DSprite.Anim([("field-attack"), 100)], "REPEAT"),
+				"field-boost-attack-early":sprite.DSprite.Anim([("field-boost-attack-early"), 100)], "REPEAT"),
+				"field-boost-attack":sprite.DSprite.Anim([("field-boost-attack"), 100)], "REPEAT"),
+				"field-boost":sprite.DSprite.Anim([("field-boost"), 100)], "REPEAT")
 			}
 		)
 		self.lantern = sprite.DSprite("lantern",
