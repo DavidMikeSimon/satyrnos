@@ -13,9 +13,9 @@ class DAvatar(drive.Drive):
 	Data attributes:
 	sprite -- The sprite being used to draw Satyrn himself at the moment.
 		This is also used to figure out some parts of Satyrn's current state.
-	boost_field -- Sprite used for the field that appears when Satyrn uses
+	field_boost -- Sprite used for the field that appears when Satyrn uses
 		the lantern to move around.
-	attack_field -- SPrite used for the field that appears when Satyrn
+	field_attack -- SPrite used for the field that appears when Satyrn
 		attacks stuff with the lantern.
 	lantern -- Sprite used for lantern drawn behind Satyrn. Its offset
 		is from the center of the Satyrn sprite/object.
@@ -24,7 +24,11 @@ class DAvatar(drive.Drive):
 		visual; lantern's actual position changes instantaneously.
 	lantern_rad -- Radius of the circle that lantern moves around.
 	lantern_ang -- Current angle of the lantern from Satyrn, controlled by player.
-	boost_push -- How hard to push when boosting.
+	boost_push -- How hard to push when just boosting.
+	boost_attack_1_push -- How hard to push when boosting during the early
+		stronger part of an attack.
+	boost_attack_2_push -- How hard to push when boosting during the latter
+		weaker part of an attack.
 	boost_max_speed -- The maximum linear speed (in terms of body.getLinearVel) that
 		Satyrn can reach while boosting.
 	"""
@@ -38,7 +42,6 @@ class DAvatar(drive.Drive):
 				"crouch":image.DImage("satyrn/crouch.png", Size(1.0, 1.0)),
 				"crouch-to-stand":image.DImage("satyrn/crouch-to-stand.png", Size(1.0, 1.0)),
 				"float-boost":image.DImage("satyrn/float-boost.png", Size(1.0, 1.0)),
-				"float-cruise":image.DImage("satyrn/float-cruise.png", Size(1.0, 1.0)),
 				"float-daze":image.DImage("satyrn/float-daze.png", Size(1.0, 1.0)),
 				"float-flip":image.DImage("satyrn/float-flip.png", Size(1.0, 1.0)),
 				"float-ow":image.DImage("satyrn/float-ow.png", Size(1.0, 1.0)),
@@ -55,8 +58,7 @@ class DAvatar(drive.Drive):
 				"crouch-move":sprite.DSprite.Anim([("crouch-move", 100)], "REPEAT"),
 				"crouch":sprite.DSprite.Anim([("crouch", 100)], "REPEAT"),
 				"crouch-to-stand":sprite.DSprite.Anim([("crouch-to-stand", 100)], "REPEAT"),
-				"float-boost":sprite.DSprite.Anim([("float-boost", 350)], "float"),
-				"float-cruise":sprite.DSprite.Anim([("float-cruise", 200)], "float"),
+				"float-boost":sprite.DSprite.Anim([("float-boost", 350)], "REPEAT"),
 				"float-daze":sprite.DSprite.Anim([("float-daze", 100)], "REPEAT"),
 				"float-flip":sprite.DSprite.Anim([("float-flip", 100)], "REPEAT"),
 				"float-ow":sprite.DSprite.Anim([("float-ow", 100)], "REPEAT"),
@@ -70,21 +72,24 @@ class DAvatar(drive.Drive):
 				"stand-to-crouch":sprite.DSprite.Anim([("stand-to-crouch", 100)], "REPEAT"),
 			}
 		)
-		self.field = sprite.DSprite("null",
+		self.field_attack = sprite.DSprite("null",
 			{
 				"null":drive.Drive(),
-				"field-attack-early":image.DImage("satyrn/field-attack-early.png", Size(2.0, 2.0)),
-				"field-attack":image.DImage("satyrn/field-attack.png", Size(2.0, 2.0)),
-				"field-boost-attack-early":image.DImage("satyrn/field-boost-attack-early.png", Size(2.0, 2.0)),
-				"field-boost-attack":image.DImage("satyrn/field-boost-attack.png", Size(2.0, 2.0)),
-				"field-boost":image.DImage("satyrn/field-boost.png", Size(1.0, 1.0))
+				"field-attack-1":image.DImage("satyrn/field-attack-1.png", Size(2.0, 2.0)),
+				"field-attack-2":image.DImage("satyrn/field-attack-2.png", Size(2.0, 2.0)),
 			}, {
-				"null":sprite.DSprite.Anim([("null"), 100)], "REPEAT"),
-				"field-attack-early":sprite.DSprite.Anim([("field-attack-early"), 100)], "REPEAT"),
-				"field-attack":sprite.DSprite.Anim([("field-attack"), 100)], "REPEAT"),
-				"field-boost-attack-early":sprite.DSprite.Anim([("field-boost-attack-early"), 100)], "REPEAT"),
-				"field-boost-attack":sprite.DSprite.Anim([("field-boost-attack"), 100)], "REPEAT"),
-				"field-boost":sprite.DSprite.Anim([("field-boost"), 100)], "REPEAT")
+				"null":sprite.DSprite.Anim([("null", 100)], "REPEAT"),
+				"field-attack-1":sprite.DSprite.Anim([("field-attack-1", 200)], "field-attack-2"),
+				"field-attack-2":sprite.DSprite.Anim([("field-attack-2", 100)], "REPEAT"),
+			}
+		)
+		self.field_boost = sprite.DSprite("null",
+			{
+				"null":drive.Drive(),
+				"field-boost":image.DImage("satyrn/field-boost.png", Size(1.0, 1.0)),
+			}, {
+				"null":sprite.DSprite.Anim([("null", 100)], "REPEAT"),
+				"field-boost":sprite.DSprite.Anim([("field-boost", 100)], "REPEAT"),
 			}
 		)
 		self.lantern = sprite.DSprite("lantern",
@@ -94,16 +99,22 @@ class DAvatar(drive.Drive):
 				"lantern":sprite.DSprite.Anim([("lantern", 100)], "REPEAT"),
 			}
 		)
-		self.lantern_rot_speed = 2
+		self.lantern_rot_speed = 3
 		self.lantern_rad = 0.3
 		self.lantern_ang = 0.5
-		self.boost_push = 1
+		self.boost_push = 0.5
+		self.boost_attack_1_push = 2.5
+		self.boost_attack_2_push = 1.5
 		self.boost_max_speed = 5
 	
 	def _draw(self, obj):
 		self.lantern.offset = Point(self.lantern_rad, 0).rot(Point(0,0), self.lantern_ang-obj.ang)
 		self.lantern.draw(obj)
 		self.sprite.draw(obj)
+		self.field_boost.rot_offset = self.lantern_ang-obj.ang
+		self.field_boost.draw(obj)
+		self.field_attack.rot_offset = self.lantern_ang-obj.ang
+		self.field_attack.draw(obj)
 	
 	def _step(self, obj):
 		# Add strong angular drag; Satyrn has a tendency to make himself stop rotating
@@ -121,6 +132,20 @@ class DAvatar(drive.Drive):
 		if app.keys[K_RIGHT]:
 			push_vec[0] = 1
 		
+		# Turn on the attack animation if they're holding down the sword key
+		if app.keys[K_v]:
+			if self.field_attack.cur_anim == "null":
+				self.field_attack.cur_anim = "field-attack-1"
+		elif self.field_attack.cur_anim == "field-attack-2":
+			self.field_attack.cur_anim = "null"
+
+		# Figure out how hard a boost would push us this step, based on state of the attack field
+		bpush = self.boost_push
+		if self.field_attack.cur_anim == "field-attack-1":
+			bpush = self.boost_attack_1_push
+		elif self.field_attack.cur_anim == "field-attack-2":
+			bpush = self.boost_attack_2_push
+		
 		# This will be the angle that the lantern moves towards, relative to Satyrn
 		# By default, until the player hits a button, the lantern just wants to be where it is
 		des_angle = self.lantern_ang
@@ -133,22 +158,29 @@ class DAvatar(drive.Drive):
 			des_angle = Point(0,0).ang_to(-push_vec)
 			if app.keys[K_b]:
 				self.sprite.cur_anim = "float-boost"
-				obj.body.addForce(Point(self.boost_push,0).rot(Point(0,0), self.lantern_ang+0.5).fake_3d_tuple())
+				self.field_boost.cur_anim = "field-boost"
+				obj.body.addForce(Point(bpush,0).rot(Point(0,0), self.lantern_ang+0.5).fake_3d_tuple())
 			else:
 				self.sprite.cur_anim = "float"
-		elif app.keys[K_b] and cur_speed > 0.0001:
-			# If boosting, but not holding a direction, point the lantern into heading, so that Satyrn stalls
-			# Only start stalling if lantern is actually facing in the right direction
+				self.field_boost.cur_anim = "null"
+		elif (app.keys[K_b] or app.keys[K_v]) and cur_speed > 0.0001:
+			# If boosting/attacking, but not holding a direction, point the lantern in the direction Satyrn is heading
 			des_angle = Point(0,0).ang_to(cur_vel)
-			if abs(des_angle%1-self.lantern_ang%1) < 0.001:
+			# Only start stalling if lantern is actually facing in the right direction
+			if app.keys[K_b] and abs(des_angle%1-self.lantern_ang%1) < 0.001:
 				# If this step of stalling would cause Satyrn to reverse direction, just cheat and set velocity to 0
 				self.sprite.cur_anim = "float-boost"
-				if Point(0,0).dist_to(cur_vel) > self.boost_push/(obj.body.getMass().mass*app.maxfps):
-					obj.body.addForce(Point(self.boost_push,0).rot(Point(0,0), self.lantern_ang+0.5).fake_3d_tuple())
+				self.field_boost.cur_anim = "field-boost"
+				if Point(0,0).dist_to(cur_vel) > bpush/(obj.body.getMass().mass*app.maxfps):
+					obj.body.addForce(Point(bpush,0).rot(Point(0,0), self.lantern_ang+0.5).fake_3d_tuple())
 				else:
 					obj.body.setLinearVel((0,0,0))
 			else:
 				self.sprite.cur_anim = "float"
+				self.field_boost.cur_anim = "null"
+		else:
+			self.sprite.cur_anim = "float"
+			self.field_boost.cur_anim = "null"
 		
 		# Move the lantern towards the pressed direction
 		dist = (des_angle - self.lantern_ang) % 1

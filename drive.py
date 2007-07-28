@@ -33,9 +33,9 @@ class Drive(object):
 		if (self.drawing):
 			need_pop = False
 			
-			if abs(self.rot_offset*obj.ang) > 0.00001:
+			if abs(self.rot_offset) > 0.00001:
 				glPushMatrix()
-				glRotate(util.rev2deg(obj.ang*self.rot_offset), 0, 0, 1)
+				glRotate(util.rev2deg(self.rot_offset), 0, 0, 1)
 				need_pop = True
 			
 			if self.offset != None:
