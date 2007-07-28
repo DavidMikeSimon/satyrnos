@@ -134,13 +134,13 @@ def sim_deinit():
 	ode.CloseODE()
 
 def _sim_step():
-	"""Runs one step of the simulation. This is 1/60th of a simulated second."""
+	"""Runs one step of the simulation. This is (1/maxfps)th of a simulated second."""
 
 	#Calculate collisions, run ODE simulation
 	contactgroup = ode.JointGroup() #A group for collision contact joints
 	dyn_space.collide(contactgroup, collision.collision_cb) #Collisions among dyn_space objects
 	ode.collide2(dyn_space, static_space, contactgroup, collision.collision_cb) #Colls between dyn_space objects and static_space objs
-	odeworld.quickStep(0.01)
+	odeworld.quickStep(1/maxfps)
 	contactgroup.empty()
 		
 	#Cancel non-2d activity, and load each GameObj's state with the new information ODE calculated

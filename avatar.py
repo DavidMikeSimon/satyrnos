@@ -81,7 +81,7 @@ class DAvatar(drive.Drive):
 		self.lantern_rot_speed = 2
 		self.lantern_rad = 0.3
 		self.lantern_ang = 0.5
-		self.boost_push = 2
+		self.boost_push = 1
 		self.boost_max_speed = 5
 	
 	def _draw(self, obj):
@@ -93,7 +93,7 @@ class DAvatar(drive.Drive):
 		# Add strong angular drag; Satyrn has a tendency to make himself stop rotating
 		angVel = obj.body.getAngularVel()[2]
 		obj.body.addTorque((0, 0, -angVel/4))
-
+		
 		# Figure out which direction the user is pressing in
 		push_vec = Point(0, 0)
 		if app.keys[K_UP]:
@@ -104,13 +104,13 @@ class DAvatar(drive.Drive):
 			push_vec[1] = 1
 		if app.keys[K_RIGHT]:
 			push_vec[0] = 1
-
+		
 		# This will be the angle that the lantern moves towards, relative to Satyrn
 		# By default, until the player hits a button, the lantern just wants to be where it is
 		des_angle = self.lantern_ang
 		
-		# Used to figure out if we are going so slow that we need to fake the end of the stall by just zeroing velocity
-		
+		cur_vel = Point(obj.body.getLinearVel()[0], obj.body.getLinearVel()[1])
+		cur_speed = Point(0,0).dist_to(cur_vel)
 		if push_vec[0] != 0 or push_vec[1] != 0:
 			# Rotate the lantern around towards the opposite side of where the player is pressing
 			# That's because, conceptually, the player should think of the lantern as pushing Satyrn
@@ -120,13 +120,17 @@ class DAvatar(drive.Drive):
 				obj.body.addForce(Point(self.boost_push,0).rot(Point(0,0), self.lantern_ang+0.5).fake_3d_tuple())
 			else:
 				self.sprite.cur_anim = "float"
-		elif app.keys[K_b]:
-			# If boosting, but not holding a direction, point the lantern such that Satyrn slows down
-			des_angle = Point(0,0).ang_to(Point(obj.body.getLinearVel()[0], obj.body.getLinearVel()[1]))
-			if abs(des_angle%1-self.lantern_ang%1) < 0.01:
-				# Only start stalling if we're actually facing in the right direction
+		elif app.keys[K_b] and cur_speed > 0.0001:
+			# If boosting, but not holding a direction, point the lantern into heading, so that Satyrn stalls
+			# Only start stalling if lantern is actually facing in the right direction
+			des_angle = Point(0,0).ang_to(cur_vel)
+			if abs(des_angle%1-self.lantern_ang%1) < 0.001:
+				# If this step of stalling would cause Satyrn to reverse direction, just cheat and set velocity to 0
 				self.sprite.cur_anim = "float-boost"
-				obj.body.addForce(Point(self.boost_push,0).rot(Point(0,0), self.lantern_ang+0.5).fake_3d_tuple())
+				if Point(0,0).dist_to(cur_vel) > self.boost_push/(obj.body.getMass().mass*app.maxfps):
+					obj.body.addForce(Point(self.boost_push,0).rot(Point(0,0), self.lantern_ang+0.5).fake_3d_tuple())
+				else:
+					obj.body.setLinearVel((0,0,0))
 			else:
 				self.sprite.cur_anim = "float"
 		
@@ -140,7 +144,7 @@ class DAvatar(drive.Drive):
 				dir = -1
 			dist = dir * self.lantern_rot_speed/app.maxfps
 		self.lantern_ang += dist
-
+		
 		# Figure out if the player just released the boost key
 		#boost_released = False
 		#for event in app.events:
