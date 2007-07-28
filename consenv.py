@@ -18,7 +18,7 @@ import console
 import drive
 import gameobj
 from geometry import *
-import hull
+import geommold
 import image
 import magnet
 import resman

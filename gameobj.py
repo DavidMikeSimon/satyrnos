@@ -1,7 +1,7 @@
 import math, ode, sre
 from OpenGL.GL import *
 
-import app, util, hull
+import app, util
 from geometry import *
 
 class GameObj(object):
