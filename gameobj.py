@@ -13,6 +13,7 @@ class GameObj(object):
 	
 	Data attributes:
 	pos -- 2-tuple of the absolute location of the center of the object, in meters.
+	vel -- The linear velocity of the object.
 	ang -- The angle of the object, in clockwise revolutions.
 		Set these instead of calling methods on body or geom: ODE
 		will automatically be updated when these are set, and
@@ -58,7 +59,7 @@ class GameObj(object):
 		if drives == None: self.drives = util.TrackerList()
 		elif isinstance(drives, util.TrackerList): self.drives = drives
 		else: self.drives = util.TrackerList(drives)
-	
+
 	def __str__(self):
 		return " GO: (%7.3f, %7.3f) %s [%s]" % (
 			self.pos.x,
@@ -111,6 +112,16 @@ class GameObj(object):
 		if self._body != None: self._set_ode_pos(self._body)
 		elif self._geom != None: self._set_ode_pos(self._geom)
 	
+	def _get_vel(self):
+		if self._body != None:
+			return Point(*self.body.getLinearVel()[0:2])
+		else:
+			return Point(0,0)
+
+	def _set_vel(self, vel):
+		if self._body != None:
+			self.body.setLinearVel(vel.fake_3d_tuple())
+	
 	def _get_ang(self): return self._ang
 	
 	def _set_ang(self, ang):
@@ -120,6 +131,7 @@ class GameObj(object):
 		#If body and geom are connected, setting pos or ang in one sets it in both
 		if self._body != None: self._set_ode_ang(self._body)
 		elif self._geom != None: self._set_ode_ang(self._geom)
+	
 	
 	def _fetch_ode_from(self, odething):
 		"""Sets position and rotation from the given ODE object (either a body or a geom)."""
@@ -217,6 +229,7 @@ class GameObj(object):
 		return "(%2.3f, %2.3f) %2.3f" % (self.pos[0], self.pos[1], self.ang)
 	
 	pos = property(_get_pos, _set_pos)
+	vel = property(_get_vel, _set_vel)
 	ang = property(_get_ang, _set_ang)
 	body = property(_get_body, _set_body)
 	geom = property(_get_geom, _set_geom)

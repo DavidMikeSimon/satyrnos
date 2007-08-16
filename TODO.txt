@@ -1,10 +1,8 @@
-HULL JUNK IN PROGRESS:
-- Move the complex hull code over too
-- Get rid of hullgen.py
-- Get rid of hulls/*.hull files, have that specified in the level data (or for now, satyrnos.py)
-- Mold generators that load from images should use resman
 
 Bugs:
+- Tapping attack while holding direction should not make Satyrn move
+- Cap linear velocity for avatar; make it a low cap for cruising, then ramp up cruising accel
+- Mold generators that load from images should use resman
 - Friction should decrease velocity
 - Things tend to fall through ComplexGeoms
 - Enforce particular winding order in ComplexGeom

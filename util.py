@@ -19,6 +19,26 @@ def rev2deg(ang):
 	"""
 	return 360 * ang
 
+def min_ang_diff(src, dest):
+	"""Returns the shortest angular distance between two angles (in revolutions).
+
+	By "shortest", I mean that this will return whichever is lesser out of
+	clockwise or counter-clockwise."""
+	dist = (dest - src) % 1
+	if 1-dist < dist:
+		dist = -(1-dist)
+	return dist
+
+def cap_ang_diff(ang, max):
+	"""Reduces an angle offset to be less than a maximum, maintaining sign."""
+	if abs(ang) > max:
+		if ang > 0:
+			return max
+		else:
+			return -max
+	else:
+		return ang
+
 def anchored_joint(joint_type, obj1, anchor = None, obj2 = None):
 	"""Creates a new joint of the given type between two GameObjs, calls setAnchor on it.
 
