@@ -49,7 +49,7 @@ class DCameraLead(drive.Drive):
 	zoom_speed -- How quickly, in zoom units per second, the camera can change zoom
 	"""
 	
-	def __init__(self, bounds = None, max_speed = 4.0, lead_length = 0.5, cam_speed = 1, max_zoom = 0.4, zoom_speed = 0.5):
+	def __init__(self, bounds = None, max_speed = 4.0, lead_length = 0.5, cam_speed = 0.6, max_zoom = 0.4, zoom_speed = 0.5):
 		super(DCameraLead, self).__init__(drawing = True, stepping = True)
 		self.bounds = bounds
 		self.max_speed = max_speed

@@ -121,7 +121,7 @@ class DAvatar(drive.Drive):
 		self.attack_rot_speed = 3
 		self.cruise_push = 1.8
 		self.cruise_max_speed = 1.5
-		self.boost_push_1 = 2.5
+		self.boost_push_1 = 5
 		self.boost_push_2 = 2.0
 		self.boost_max_speed = 5
 		self.stall_push = 4
@@ -193,14 +193,14 @@ class DAvatar(drive.Drive):
 			
 			# Holding down the attack field means killing rotation and slowing/killing linear velocity
 			obj.body.setAngularVel((0,0,0))
-			if obj.vel.mag() > self.stall_speed_diff/app.maxfps:
-				obj.vel = obj.vel - Point(self.stall_speed_diff/app.maxfps,0).rot(Point(0,0), obj.vel.ang())
-			else:
-				obj.vel = Point(0,0)
+			push = -obj.vel * app.maxfps * obj.body.getMass().mass
+			if push.mag() > self.stall_push:
+				push = push.to_length(self.stall_push)
+			obj.body.addForce(push.fake_3d_tuple())
 		
 		# If player is not attacking, but is pushing the boost button and/or holding a direction, move Satyrn
 		# Either way, set his animation to be appropriate to his movement/non-movement
-		if self.field_attack.cur_anim == "null" and (push_vec[0] != 0 or push_vec[1] != 0 or self.field_boost.cur_anim != "null"):
+		if (self.field_boost.cur_anim != "null" or self.field_attack.cur_anim == "null") and (push_vec[0] != 0 or push_vec[1] != 0 or self.field_boost.cur_anim != "null"):
 			force = Point(bpush,0).rot(Point(0,0), des_lantern_ang+0.5)
 			
 			if self.field_boost.cur_anim == "null":
