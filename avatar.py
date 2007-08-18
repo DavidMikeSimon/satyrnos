@@ -122,8 +122,8 @@ class DAvatar(drive.Drive):
 		self.attack_rot_speed = 3
 		self.cruise_push = 1.8
 		self.cruise_max_speed = 1.5
-		self.boost_push_1 = 1.7
-		self.boost_push_2 = 1.3
+		self.boost_push_1 = 2.5
+		self.boost_push_2 = 2.0
 		self.boost_max_speed = 5
 		self.stall_speed_diff = 15
 	
