@@ -38,8 +38,7 @@ class DAvatar(drive.Drive):
 	boost_push_1 -- How hard to push during the initial pulse of a boost.
 	boost_push_2 -- How hard to push during when player continues holding down the boost button.
 	boost_max_speed -- The maximum linear speed that Satyrn can reach while boosting.
-	stall_speed_diff -- The maximum amount of linear speed that Satyrn can lose per
-		second while stalling.
+	stall_push -- The maximum amount of force Satyrn can use when stalling with the attack field.
 	"""
 	
 	def __init__(self):
@@ -125,7 +124,7 @@ class DAvatar(drive.Drive):
 		self.boost_push_1 = 2.5
 		self.boost_push_2 = 2.0
 		self.boost_max_speed = 5
-		self.stall_speed_diff = 15
+		self.stall_push = 4
 	
 	def _draw(self, obj):
 		self.lantern.offset = Point(self.lantern_rad, 0).rot(Point(0,0), self.lantern_ang-obj.ang)
@@ -194,7 +193,6 @@ class DAvatar(drive.Drive):
 			
 			# Holding down the attack field means killing rotation and slowing/killing linear velocity
 			obj.body.setAngularVel((0,0,0))
-			vel_diff = -obj.vel
 			if obj.vel.mag() > self.stall_speed_diff/app.maxfps:
 				obj.vel = obj.vel - Point(self.stall_speed_diff/app.maxfps,0).rot(Point(0,0), obj.vel.ang())
 			else:

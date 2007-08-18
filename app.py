@@ -169,7 +169,7 @@ def _draw_frame():
 		o.predraw()
 	
 	#Translate so that camera position is centered
-	glTranslatef(winsize[0]*zoom/(2*pixm) - camera[0], winsize[1]*zoom/(2*pixm) - camera[1], 0)
+	glTranslatef((winsize[0]*zoom)/(2*pixm) - camera[0], (winsize[1]*zoom)/(2*pixm) - camera[1], 0)
 
 	#This actually draws the objects
 	for o in objects:
