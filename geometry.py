@@ -151,9 +151,17 @@ class Point(_CoordLike, object):
 	def __deepcopy__(self, memo):
 		return self.__copy__()
 	
+	def mag(self):
+		"""Returns the distsance between the origin and this point."""
+		return math.sqrt(self[0]*self[0] + self[1]*self[1])
+	
 	def dist_to(self, other):
 		"""Returns the distance between this point and another."""
 		return math.sqrt((self[0]-other[0])**2.0 + (self[1]-other[1])**2.0)
+	
+	def ang(self):
+		"""Returns the angle from the origin to this point."""
+		return Point(0,0).ang_to(self)
 	
 	def ang_to(self, other):
 		"""Returns the angle from this point to another in clockwise revolutions.

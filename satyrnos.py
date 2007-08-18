@@ -149,7 +149,7 @@ app.objects[3].append(gameobj.GameObj(
 	body=sphere_body(0.5, 0.5),
 	geom=geommold.CircleGeomMold().make_geom(Size(0.234,0.234)),
 	drives=[avatar.DAvatar()]))
-app.objects[3][0].drives.append(camera.DCameraDirect())
+app.objects[3][0].drives.append(camera.DCameraLead())
 
 #app.objects[3].append(gameobj.GameObj(
 #	Point(3.3, 5),

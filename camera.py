@@ -32,57 +32,52 @@ class DCameraDirect(drive.Drive):
 class DCameraLead(drive.Drive):
 	"""Drive that changes app.camera to show where the object's going, without going outside bounds.
 	
-	DCameraLead looks ahead of the object based on its velocity, which is calculated just by
-	comparing snapshots (so, it's not neccessary that the object have an ODE body). When
+	DCameraLead looks ahead of the object based on its velocity. When
 	the object's velocity is higher than a certain amount, the camera pans forward
-	to show where the object is going. The amount of desired pan is fixed (either no pan, or full pan
-	once velocity is high enough), but the camera approaches the desired pan at a steady speed so
-	that it seems smoother.
+	to show where the object is going. It pans all the way out to lead_length when
+	the object reaches max_speed.
 	
 	Don't have more than one camera drive active at once.
 	
 	Data attributes:
 	bounds -- A rectangle which the camera's center can never
 		move outside of. If it's None, camera can go anywhere.
-	min_vel -- How many m/s of object speed required for the camera to want to pan ahead.
-	lead_length -- How far the camera wants to pan ahead.
-	speed -- How quickly, in meters per second, the camera moves towards desired offset.
+	max_speed -- How many m/s of object speed before the camera is offset by lead_length, and zoomed out by max_zoom.
+	lead_length -- How far the camera can pan ahead.
+	cam_speed -- How quickly, in meters per second, the camera moves towards desired offset.
+	max_zoom -- How far the camera can zoom out past the neutral 1.0
+	zoom_speed -- How quickly, in zoom units per second, the camera can change zoom
 	"""
 	
-	def __init__(self, bounds = None, min_vel = 1.5, lead_length = 0.6, speed = 0.4):
-		super(DCameraLead, self).__init__(drawing = True)
+	def __init__(self, bounds = None, max_speed = 4.0, lead_length = 0.5, cam_speed = 1, max_zoom = 0.4, zoom_speed = 0.5):
+		super(DCameraLead, self).__init__(drawing = True, stepping = True)
 		self.bounds = bounds
-		self.min_vel = min_vel
+		self.max_speed = max_speed
 		self.lead_length = lead_length
-		self.speed = speed
+		self.cam_speed = cam_speed
+		self.max_zoom = max_zoom
+		self.zoom_speed = zoom_speed
 		self._cur_offset = Point(0, 0) #The camera's offset as of now
-		self._last_obj_pos = Point(0, 0) #The object's last position (for tracking its velocity)
-		self._inited = False #So we know that _obj_pos is invalid the first run of _predraw
+		self._cur_zoom = 0 #The camera's zoom offset as of now (added to the neutral 1.0 zoom)
+	
+	def _step(self, obj):
+		speed = min(obj.vel.mag(), self.max_speed)
+		
+		des_offset = obj.vel.to_length(self.lead_length * (speed/self.max_speed))
+		diff = des_offset - self._cur_offset
+		if diff.mag() > self.cam_speed/app.maxfps:
+			diff = diff.to_length(self.cam_speed/app.maxfps)
+		self._cur_offset += diff
+		
+		des_zoom = self.max_zoom * (speed/self.max_speed)
+		diff = des_zoom - self._cur_zoom
+		if abs(diff) > self.zoom_speed/app.maxfps:
+			if diff > 0:
+				diff = self.zoom_speed/app.maxfps
+			else:
+				diff = -self.zoom_speed/app.maxfps
+		self._cur_zoom += diff
 	
 	def _predraw(self, obj):
-		time = app.msecs/1000
-		for axis in range(0, 2):
-			obj_vel = 0
-			if self._inited == True:
-				obj_vel = (obj.pos[axis] - self._last_obj_pos[axis])/time
-
-			wanted_offset = 0
-			if obj_vel > self.min_vel:
-				wanted_offset = self.lead_length
-			elif -obj_vel > self.min_vel:
-				wanted_offset = -self.lead_length
-
-			if (axis == 0):
-				app.calcvel = obj_vel
-			
-			if abs(self._cur_offset[axis] - wanted_offset) < self.speed*time:
-				self._cur_offset[axis] = wanted_offset
-			elif (self._cur_offset[axis] < wanted_offset):
-				self._cur_offset[axis] += self.speed*time
-			else:
-				self._cur_offset[axis] -= self.speed*time
-			
-		if self._inited == False: self._inited = True
-		self._last_obj_pos = obj.pos
-		
+		#app.zoom = 1.0 + self._cur_zoom
 		DCameraDirect(self.bounds, self._cur_offset)._predraw(obj)

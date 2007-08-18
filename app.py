@@ -27,9 +27,11 @@ winmeters = Size(4, 3) #Size of the display window in meters
 maxfps = 60 #Max frames per second, and absolute sim-steps per second
 pixm = winsize[0]/winmeters[0] #Number of screen pixels per game meter
 camera = Point() #Where, in game meters, the view is centered
+zoom = 1.0 #The zoom factor for the camera (1.0 is neutral)
 screen = None #The PyGame screen
 clock = None #An instance of pygame.time.Clock() used for timing; use step count, not this for game-logic timing
 msecs = 0 #TODO: Make sure everything uses step counters, not wall-clock time
+totalsteps = 0L #Number of simulation steps we've ran
 draw_geoms = False #If True, then GameObjs and geom-related drives draw collision geom outlines
 cons = None #An instances of console.Console used for in-game debugging
 watchers = [] #A sequence of console.Watchers used for in-game debugging
@@ -49,8 +51,6 @@ def ui_init():
 	
 	glutInit(sys.argv) # GLUT is only used for drawing text
 	
-	glViewport(0, 0, winsize[0], winsize[1])
-	gluOrtho2D(0.0, winsize[0], winsize[1], 0.0) #This makes the y-axis go in the direction we want
 	glClearColor(1.0, 1.0, 1.0, 0.0)
 	glEnable(GL_BLEND)
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
@@ -112,7 +112,8 @@ def sim_init():
 	with those in static_space, as well as with each other.
 	"""
 	
-	global odeworld, static_space, dyn_space, objects
+	global odeworld, static_space, dyn_space, objects, totalsteps
+	totalsteps = 0L
 	odeworld = ode.World()
 	odeworld.setQuickStepNumIterations(10)
 	static_space = ode.HashSpace()
@@ -157,6 +158,8 @@ def _draw_frame():
 	msecs = clock.get_time()
 	
 	glClear(GL_COLOR_BUFFER_BIT)
+	glLoadIdentity();
+	gluOrtho2D(0.0, winsize[0]*zoom, winsize[1]*zoom, 0.0) #This makes the y-axis go in the direction we want
 	
 	glPushMatrix()
 	glScalef(pixm, pixm, 0) #OpenGL units are now game meters, not pixels
@@ -166,7 +169,7 @@ def _draw_frame():
 		o.predraw()
 	
 	#Translate so that camera position is centered
-	glTranslatef(winsize[0]/(2*pixm) - camera[0], winsize[1]/(2*pixm) - camera[1], 0)
+	glTranslatef(winsize[0]*zoom/(2*pixm) - camera[0], winsize[1]*zoom/(2*pixm) - camera[1], 0)
 
 	#This actually draws the objects
 	for o in objects:
@@ -179,6 +182,8 @@ def _draw_frame():
 			w.update()
 			w.draw()
 	
+	glLoadIdentity();
+	gluOrtho2D(0.0, winsize[0], winsize[1], 0.0) #No zoom factor for UI elements
 	cons.draw()
 	
 	glFlush()
@@ -191,6 +196,8 @@ def _proc_input():
 		cons.handle(event)
 		if event.type == pygame.QUIT:
 			raise QuitException
+		elif event.type == pygame.KEYDOWN and event.key == pygame.K_BACKSPACE:
+			raise QuitException
 		else:
 			events.append(event)
 	keys = pygame.key.get_pressed()
@@ -200,8 +207,9 @@ def run():
 	
 	You have to call ui_init() and sim_init() before running this.
 	"""
+	global totalsteps
+	
 	try:
-		totalsteps = 0L    #Number of simulation steps we've ran
 		totalms = 0L       #Total number of milliseconds passed
 		while True:
 			elapsedms = clock.tick(maxfps)

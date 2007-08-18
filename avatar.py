@@ -19,19 +19,25 @@ class DAvatar(drive.Drive):
 		attacks stuff with the lantern.
 	lantern -- Sprite used for lantern drawn behind Satyrn. Its offset
 		is from the center of the Satyrn sprite/object.
-	lantern_rot_speed -- How fast (in revolutions per second) the lantern
+	lantern_push_rot_speed -- How fast (in revolutions per second) the lantern
 		can move around Satyrn to the player-desired position.
+	lantern_drift_rot_speed -- How fast the lantern moves to opposite-velocity
+		position when the player hasn't pressed a direction key in a little while.
+	lantern_drift_delay -- How many steps between when the player releases the
+		direction key and the lantern starts to drift back to opposite-velocity position.
 	lantern_rad -- Radius of the circle that lantern moves around.
 	lantern_ang -- Current angle of the lantern from Satyrn, controlled by player.
+	last_push_step -- The step at which the player last pushed a direction.
+	last_push_ang -- The last angle that the player pushed from (that is, the lantern's angle).
 	attack_rot_speed -- How fast (in revs per second) the attack angle changes
 		when the player pushes a direction during an attack. This is also the
 		speed at which Satyrn's orientation can be manually changed while the
 		attack field is turned on.
 	cruise_push -- How hard to push when cruising.
+	cruise_max_speed -- The maximum linear speed that Satyrn can reach while cruising.
 	boost_push_1 -- How hard to push during the initial pulse of a boost.
 	boost_push_2 -- How hard to push during when player continues holding down the boost button.
-	boost_max_speed -- The maximum linear speed (in terms of body.getLinearVel) that
-		Satyrn can reach while boosting.
+	boost_max_speed -- The maximum linear speed that Satyrn can reach while boosting.
 	stall_speed_diff -- The maximum amount of linear speed that Satyrn can lose per
 		second while stalling.
 	"""
@@ -106,15 +112,20 @@ class DAvatar(drive.Drive):
 				"lantern":sprite.DSprite.Anim([("lantern", 100)], "REPEAT"),
 			}
 		)
-		self.lantern_rot_speed = 3
+		self.lantern_push_rot_speed = 3
+		self.lantern_drift_rot_speed = 1
+		self.lantern_drift_delay = 30
 		self.lantern_rad = 0.3
 		self.lantern_ang = 0.5
+		self.last_push_step = 0
+		self.last_push_ang = 0.5
 		self.attack_rot_speed = 3
-		self.cruise_push = 0.5
-		self.boost_push_1 = 1.5
-		self.boost_push_2 = 0.7
+		self.cruise_push = 1.8
+		self.cruise_max_speed = 1.5
+		self.boost_push_1 = 1.7
+		self.boost_push_2 = 1.3
 		self.boost_max_speed = 5
-		self.stall_speed_diff = 5
+		self.stall_speed_diff = 15
 	
 	def _draw(self, obj):
 		self.lantern.offset = Point(self.lantern_rad, 0).rot(Point(0,0), self.lantern_ang-obj.ang)
@@ -165,13 +176,17 @@ class DAvatar(drive.Drive):
 			bpush = self.boost_push_2
 		
 		# This will be the angle that the lantern moves towards, relative to Satyrn
-		# By default, until the player hits a button, the lantern just wants to be where it is
-		des_lantern_ang = self.lantern_ang
+		des_lantern_ang = self.last_push_ang
+		lantern_rot_speed = self.lantern_push_rot_speed
 		
 		# Rotate the lantern around towards the opposite side of where the player is pressing
 		# That's because, conceptually, the player should think of the lantern as pushing Satyrn
 		if push_vec[0] != 0 or push_vec[1] != 0:
-			des_lantern_ang = Point(0,0).ang_to(-push_vec)
+			self.last_push_step = app.totalsteps
+			self.last_push_ang = des_lantern_ang = (-push_vec).ang()
+		elif self.field_attack.cur_anim == "null" and self.field_boost.cur_anim == "null" and obj.vel.mag() > 0.01 and app.totalsteps - self.last_push_step >= self.lantern_drift_delay:
+			lantern_rot_speed = self.lantern_drift_rot_speed
+			self.last_push_ang = des_lantern_ang = (-obj.vel).ang()
 		
 		if self.field_attack.cur_anim != "null":	
 			# When an attack field is up, orient Satyrn (and also, the sword) to face away from the lantern
@@ -180,20 +195,32 @@ class DAvatar(drive.Drive):
 			# Holding down the attack field means killing rotation and slowing/killing linear velocity
 			obj.body.setAngularVel((0,0,0))
 			vel_diff = -obj.vel
-			if Point(0,0).dist_to(obj.vel) > self.stall_speed_diff/app.maxfps:
-				obj.vel = obj.vel - Point(self.stall_speed_diff/app.maxfps,0).rot(Point(0,0), Point(0,0).ang_to(obj.vel))
+			if obj.vel.mag() > self.stall_speed_diff/app.maxfps:
+				obj.vel = obj.vel - Point(self.stall_speed_diff/app.maxfps,0).rot(Point(0,0), obj.vel.ang())
 			else:
 				obj.vel = Point(0,0)
 		
 		# If player is not attacking, but is pushing the boost button and/or holding a direction, move Satyrn
 		# Either way, set his animation to be appropriate to his movement/non-movement
 		if self.field_attack.cur_anim == "null" and (push_vec[0] != 0 or push_vec[1] != 0 or self.field_boost.cur_anim != "null"):
+			force = Point(bpush,0).rot(Point(0,0), des_lantern_ang+0.5)
+			
 			if self.field_boost.cur_anim == "null":
 				self.sprite.cur_anim = "float-cruise"
-			
-			obj.body.addForce(Point(bpush,0).rot(Point(0,0), des_lantern_ang+0.5).fake_3d_tuple())
+				# If we're cruising, we cannot increase past the maximum cruising speed
+				# If we're already going faster, we'll have to ditch some of that existing speed first
+				# This means that Satyrn will be twice as effective slowing down from speed with a cruise as speeding up
+				# That's basically just fine, even though it is unrealistic
+				post_vel = obj.vel + (force/(obj.body.getMass().mass * app.maxfps))
+				if post_vel.mag() > self.cruise_max_speed:
+					diff = (post_vel - post_vel.to_length(self.cruise_max_speed)) * obj.body.getMass().mass * app.maxfps
+					if diff.mag() > self.cruise_push:
+						diff = diff.to_length(self.cruise_push)
+					force -= diff
+					
+			obj.body.addForce(force.fake_3d_tuple())
 		elif self.field_boost.cur_anim == "null":
 			self.sprite.cur_anim = "float"
 		
 		# Move the lantern towards the pressed direction
-		self.lantern_ang += util.cap_ang_diff(util.min_ang_diff(self.lantern_ang, des_lantern_ang), self.lantern_rot_speed/app.maxfps)
+		self.lantern_ang += util.cap_ang_diff(util.min_ang_diff(self.lantern_ang, des_lantern_ang), lantern_rot_speed/app.maxfps)
