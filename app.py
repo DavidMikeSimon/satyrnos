@@ -22,6 +22,12 @@ events = []
 #Keys which were pressed at the time 'events' was compiled
 keys = []
 
+#Dictionary of collisions between geoms logged this step
+#Each key is the id of an ODE geom
+#Value is an array of ids of ODE geoms that the key geom collided with
+#The collision is added both ways, so that if A and B collide, A is in B's list, and B is in A's list too
+collisions = {}
+
 winsize = Size(1024, 768) #Size of the display window in pixels; TODO: should be a user setting
 winmeters = Size(4, 3) #Size of the display window in meters
 maxfps = 60 #Max frames per second, and absolute sim-steps per second
@@ -136,8 +142,10 @@ def sim_deinit():
 
 def _sim_step():
 	"""Runs one step of the simulation. This is (1/maxfps)th of a simulated second."""
-
+	
+	global collisions
 	#Calculate collisions, run ODE simulation
+	collisions = {}
 	contactgroup = ode.JointGroup() #A group for collision contact joints
 	dyn_space.collide(contactgroup, collision.collision_cb) #Collisions among dyn_space objects
 	ode.collide2(dyn_space, static_space, contactgroup, collision.collision_cb) #Colls between dyn_space objects and static_space objs

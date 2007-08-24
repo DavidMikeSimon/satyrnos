@@ -29,6 +29,8 @@ class Props:
 	and geoms but cannot be pushed around by the player, although they can push
 	the player around.
 
+	All collisions are logged to 
+	
 	Data attributes:
 	intersec_push -- If True, creates contact joints at intersections to push this object, the other, or both away.
 		Both objects must have this flag on for any intersection prevention to occur.
@@ -49,28 +51,31 @@ class Props:
 		
 		Newly created contact joints are placed into cjointgroup."""
 
-		#TODO: Collision priority stuff doesn't work very well when higher priority object pushes
+		#FIXME: Collision priority stuff doesn't work very well when higher priority object pushes
+		contacts = ode.collide(geom1, geom2)
 		
-		#TODO: ADD CALLBACK QUEUEING STUFF HERE
-		if (self.intersec_push and geom2.coll_props.intersec_push) or (True):
-			contacts = ode.collide(geom1, geom2)
-			if self.intersec_push and geom2.coll_props.intersec_push:
-				for c in contacts:
-					c.setMode(ode.ContactApprox1 | ode.ContactBounce)
-					c.setBounce(0.5)
-					c.setMu(5000)
+		if len(contacts) > 0:
+			for (a,b) in ((id(geom1), id(geom2)), (id(geom2), id(geom1))):
+				if not app.collisions.has_key(a):
+					app.collisions[a] = [b]
+				else:
+					app.collisions[a].append(b)
+					
+		if self.intersec_push and geom2.coll_props.intersec_push:
+			for c in contacts:
+				c.setMode(ode.ContactApprox1 | ode.ContactBounce)
+				c.setBounce(0.5)
+				c.setMu(5000)
+				cjoint = ode.ContactJoint(app.odeworld, cjointgroup, c)
+				if (self.intersec_pri == geom2.coll_props.intersec_pri):
+					#Push both objects away from each other
 					cjoint = ode.ContactJoint(app.odeworld, cjointgroup, c)
-					if (self.intersec_pri == geom2.coll_props.intersec_pri):
-						#Push both objects away from each other
-						cjoint = ode.ContactJoint(app.odeworld, cjointgroup, c)
-						cjoint.attach(geom1.getBody(), geom2.getBody())
-					elif (self.intersec_pri > geom2.coll_props.intersec_pri):
-						#Push the other object, but not this one
-						cjoint = ode.ContactJoint(app.odeworld, cjointgroup, c)
-						cjoint.attach(None, geom2.getBody())
-					else:
-						#Push this object, not the other one
-						cjoint = ode.ContactJoint(app.odeworld, cjointgroup, c)
-						cjoint.attach(geom1.getBody(), None)
-			if len(contacts) > 0:
-				pass #TODO: CALLBACK QUEUEING STUFF HERE
+					cjoint.attach(geom1.getBody(), geom2.getBody())
+				elif (self.intersec_pri > geom2.coll_props.intersec_pri):
+					#Push the other object, but not this one
+					cjoint = ode.ContactJoint(app.odeworld, cjointgroup, c)
+					cjoint.attach(None, geom2.getBody())
+				else:
+					#Push this object, not the other one
+					cjoint = ode.ContactJoint(app.odeworld, cjointgroup, c)
+					cjoint.attach(geom1.getBody(), None)

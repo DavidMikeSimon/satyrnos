@@ -140,7 +140,11 @@ app.objects[2].append(gameobj.GameObj(
 	body=sphere_body(0.2, 0.5),
 	geom=geommold.CircleGeomMold("ball.png").make_geom(Size(1, 1)),
 	drives=[image.DImage("ball.png", Size(1, 1))]))
-#app.objects[3][0].drives.append(camera.DCameraLead(bounds=Rect(Point(5, 5), Size(7, 8))))
+
+app.objects[2].append(gameobj.GameObj(
+	Point(5.6, 6.7), 0.5,
+	geom=geommold.CircleGeomMold("redball.png").make_geom(Size(1.5, 1.5), app.static_space),
+	drives=[image.DImage("redball.png", Size(1.5, 1.5))]))
 
 app.objects.append(TrackerList())
 
@@ -159,10 +163,10 @@ app.objects[3][0].drives.append(camera.DCameraLead())
 #app.objects[3][0].drives.append(camera.DCameraDirect())
 
 app.objects[3].append(gameobj.GameObj(
-	Point(3.3, 5),
+	Point(3.7, 5),
 	body=sphere_body(0.1, 0.5),
-	geom=geommold.CircleGeomMold("ball.png").make_geom(Size(0.1, 0.1)),
-	drives=[image.DImage("ball.png", Size(0.1, 0.1))]))
+	geom=geommold.CircleGeomMold("magnet.png").make_geom(Size(0.3, 0.3)),
+	drives=[image.DImage("magnet.png", Size(0.3, 0.3)), magnet.DMagnet(1, 3)]))
 
 app.objects.append(TrackerList())
 app.objects.append(TrackerList())

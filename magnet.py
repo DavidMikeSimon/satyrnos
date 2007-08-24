@@ -52,6 +52,14 @@ class DMagnet(drive.Drive):
 		self.gravity = gravity
 	
 	def _step(self, magobj):
+		didit = False
+		for first in app.collisions.keys():
+			didit = True
+			for second in app.collisions[first]:
+				print "FIRST: %s   SECOND: %s" % (first, second)
+		if didit:
+			print "---"
+			
 		#For every object excluding the actual pulling object, check if we're affecting it
 		for o in app.objects:
 			if o == magobj:
@@ -62,7 +70,7 @@ class DMagnet(drive.Drive):
 				continue
 			
 			#Ignore objects outside range, if there's a range set
-			if self.rad > 0 and self.rad < util.dist(magobj.pos, o.pos):
+			if self.rad > 0 and self.rad < magobj.pos.dist_to(o.pos):
 				continue
 			
 			o.body.addForce(mag_force(magobj.pos, o.pos, o.body.getMass().mass, self.pow, self.loss, self.gravity))
