@@ -28,6 +28,9 @@ keys = []
 #The collision is added both ways, so that if A and B collide, B is in A's list, and A is in B's list too
 collisions = {}
 
+#A group for momentary joints; the group is emptied each step, so joints only last for one step
+contactgroup = ode.JointGroup()
+
 winsize = Size(1024, 768) #Size of the display window in pixels; TODO: should be a user setting
 winmeters = Size(4, 3) #Size of the display window in meters
 maxfps = 60 #Max frames per second, and absolute sim-steps per second
@@ -143,19 +146,18 @@ def sim_deinit():
 def _sim_step():
 	"""Runs one step of the simulation. This is (1/maxfps)th of a simulated second."""
 	
-	global collisions
+	global collisions, contactgroup
+	
 	#Calculate collisions, run ODE simulation
+	contactgroup.empty()
 	collisions = {}
-	contactgroup = ode.JointGroup() #A group for collision contact joints
 	dyn_space.collide(contactgroup, collision.collision_cb) #Collisions among dyn_space objects
 	ode.collide2(dyn_space, static_space, contactgroup, collision.collision_cb) #Colls between dyn_space objects and static_space objs
 	odeworld.quickStep(1/maxfps)
-	contactgroup.empty()
 		
 	#Cancel non-2d activity, and load each GameObj's state with the new information ODE calculated
 	for o in objects:
-		if o.body != None:
-			o.sync_ode()
+		o.sync_ode()
 
 	#Have each object do any simulation stuff it needs
 	for o in objects:

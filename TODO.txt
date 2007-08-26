@@ -19,6 +19,7 @@ Bugs:
 Short term features:
 - Keep Geoms in Hulls in GameObjs, not Hulls in Geoms in GameObjs
 - Use Geoms in DLineMagnet and DRectMagnet, like was done with DMagnet
+- Force that pushes magnet should be proportional to mass of other metallic object
 - Script to generate hulls, add classes to geometry.pm for ODEifying/drawing arbitrary hulls
 - DSprite should use step for advancement, not draw (so we can use sprite for timing)
 - Joint system needs to make more sense

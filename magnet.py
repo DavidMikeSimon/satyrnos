@@ -7,7 +7,7 @@ def mag_force(source, target, tgtmass, pow, loss = 0, grav = False):
 	
 	Force is emanating from source, affecting target. Both are passed as 2-tuples.
 	Pow is the amount of force applied. Negative for pulling, positive for pushing.
-	Loss is the amount of force lost per meter distance from the object (brings pow closer to zero).
+	Loss is the amount of force lost per meter distance between magnet source and magnetized point of target object.
 	If grav is true, then mass of object is ignored; it acts as though objects have a mass of 1.
 	"""
 	
@@ -21,7 +21,7 @@ def mag_force(source, target, tgtmass, pow, loss = 0, grav = False):
 		force += diff
 		#If the loss is so powerful that we change from pushing to pulling or vice versa, then cancel
 		if (force > 0) != (pow > 0):
-			return ((0, 0, 0))
+			return Point(0, 0)
 	
 	#If we're a gravity-like force (mass of object disregarded), adjust applied force to compensate
 	if grav:
@@ -29,7 +29,7 @@ def mag_force(source, target, tgtmass, pow, loss = 0, grav = False):
 			
 	#Calculate and return the force
 	ang = math.atan2(target[1]-source[1], target[0]-source[0])
-	return ((force*math.cos(ang), force*math.sin(ang), 0))
+	return Point(force*math.cos(ang), force*math.sin(ang))
 
 
 class DMagnet(drive.Drive):
@@ -38,9 +38,9 @@ class DMagnet(drive.Drive):
 	Data attributes:
 	pow -- The amount of force applied per simstep. If negative, pulls instead of pushing.
 	rad -- The radius of the effect in meters. If non-positive, unlimited radius.
-	loss -- The amount of force lost per meter distance from the object.
+	loss -- The amount of force lost per meter distance between magnet's center and magnetized point of target object.
 		This just brings 'pow' that much closer to zero depending on distance.
-		It will never allow pow to go past zero.
+		It will never allow pow to go past zero, or to go above its normal distance.
 	gravity -- If True, then actual mass of object is ignored; act as though object had a mass of 1.
 	"""
 
@@ -52,35 +52,42 @@ class DMagnet(drive.Drive):
 		self.gravity = gravity
 		
 		# A non-intersec-pushing sphere so we can easily figure out which things are in range
-		crad = abs(rad)
-		if crad == 0:
-			crad = 9999999
-		self._geom = geommold.CircleGeomMold().make_geom(Size(abs(rad)*2,abs(rad)*2), coll_props = collision.Props(False))
-
-		self._geom_placed = False
+		if rad != 0:
+			self._geom = geommold.CircleGeomMold().make_geom(Size(abs(rad)*2,abs(rad)*2), coll_props = collision.Props(False))
+			self._geom_placed = False
+		else:
+			self._geom = None
 	
 	def _step(self, magobj):
+		#If this one has limited range
 		#No magnetism on the first step, since that step has to be used to initially set the magnet's range geom
-		if self._geom_placed == False or self._geom.getBody() is not magobj.body:
-			self._geom.setBody(magobj.body)
+		#Also, we use setPosition, not setBody, since the magnet doesn't necessarily have to have a body
+		if self._geom != None:
+			self._geom.setPosition(magobj.pos.fake_3d_tuple())
 			self._geom_placed = True
-			return
 		
-		#Figure out which dynamic objects the magnet is getting near enough to
-		#For each of those, affect it magnetically if we should 
-		if app.collisions.has_key(id(self._geom)):
+		# Figure out which objects are in range of the magnet
+		targets = []
+		if self._geom != None and self._geom_placed and app.collisions.has_key(id(self._geom)):
 			for other in app.collisions[id(self._geom)]:
-				obj = other.gameobj
-
-				# Magnet shouldn't affect itself
-				if obj is magobj:
-					continue
-				
-				#Ignore objects outside the ODE force system
-				if obj.body == None:
-					continue
-				
-				obj.body.addForce(mag_force(magobj.pos, obj.pos, obj.body.getMass().mass, self.pow, self.loss, self.gravity))
+				targets.append((other.geom.gameobj, other.avg_pos))
+		elif self._geom == None:
+			for obj in app.objects:
+				targets.append((obj, obj.pos))
+		
+		#For each object in range, affect it magnetically if we should 
+		for (obj, mpoint) in targets:
+			# Magnet shouldn't affect itself
+			if obj is magobj:
+				continue
+			
+			if obj.body != None:
+				force = mag_force(magobj.pos, mpoint, obj.body.getMass().mass, self.pow, self.loss, self.gravity)
+				obj.body.addForceAtPos(force.fake_3d_tuple(), mpoint.fake_3d_tuple())
+			
+			if magobj.body != None:
+				force = mag_force(mpoint, magobj.pos, magobj.body.getMass().mass, self.pow, self.loss, self.gravity)
+				magobj.body.addForce(force.fake_3d_tuple())
 
 
 class DLineMagnet(drive.Drive):

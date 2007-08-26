@@ -2,7 +2,8 @@ from __future__ import division
 
 import ode, sre
 
-import app
+import app, util
+from geometry import *
 
 def collision_cb(contactgroup, geom1, geom2):
 	"""Callback function to the collide method."""
@@ -16,6 +17,28 @@ def collision_cb(contactgroup, geom1, geom2):
 		g1_coll_props.handle_collision(geom1, geom2, contactgroup)
 	elif (geom1.isSpace() or g1_coll_props != None) and (geom2.isSpace() or g2_coll_props != None):
 		ode.collide2(geom1, geom2, contactgroup, collision_cb)
+
+class Collision:
+	"""Describes a collision that took place between two ODE geoms.
+
+	This object is meant to be kept in sub-arrays of the app.collisions dictionary. That dictionary
+	is keyed by the id of a geom, so this object only need to keep track of the 2nd geom that the
+	key geom collided with.
+
+	Data attributes:
+	geom -- The ODE geom that the key geom collided with.
+	pos -- An array of all the points where the objects collide; weirdly-shaped objects can collide in several spots.
+	avg_pos -- Average Point of cpoints, in absolute coordinates.
+	"""
+
+	def __init__(self, geom, cpoints):
+		self.geom = geom
+		self.cpoints = cpoints[:]
+		
+		self.avg_pos = Point(0,0)
+		for p in cpoints:
+			self.avg_pos += p
+		self.avg_pos /= len(self.cpoints)
 
 class Props:
 	"""Defines the collision properties of some object.
@@ -51,15 +74,20 @@ class Props:
 		both this object's reaction as well as the other's.
 		
 		Newly created contact joints are placed into cjointgroup."""
-
+		
 		contacts = ode.collide(geom1, geom2)
 		
+		# Add the collision to app.collisions
 		if len(contacts) > 0:
+			cpoints = []
+			for c in contacts:
+				cpoints.append(Point(c.getContactGeomParams()[0][0], c.getContactGeomParams()[0][1]))
+				
 			for (a,b) in ((id(geom1), geom2), (id(geom2), geom1)):
 				if not app.collisions.has_key(a):
-					app.collisions[a] = [b]
+					app.collisions[a] = [Collision(b, cpoints)]
 				else:
-					app.collisions[a].append(b)
+					app.collisions[a].append(Collision(b, cpoints))
 					
 		if self.intersec_push and geom2.coll_props.intersec_push:
 			for c in contacts:

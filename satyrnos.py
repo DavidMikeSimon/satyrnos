@@ -164,9 +164,9 @@ app.objects[3][0].drives.append(camera.DCameraLead())
 
 app.objects[3].append(gameobj.GameObj(
 	Point(3.7, 5),
-	body=sphere_body(0.1, 0.5),
-	geom=geommold.CircleGeomMold("magnet.png").make_geom(Size(0.3, 0.3)),
-	drives=[image.DImage("magnet.png", Size(0.3, 0.3)), magnet.DMagnet(1, 3)]))
+	body=sphere_body(0.5, 0.5),
+	geom=geommold.ComplexGeomMold("magnet.png").make_geom(Size(0.3, 0.3)),
+	drives=[image.DImage("magnet.png", Size(0.3, 0.3)), magnet.DMagnet(0.3, 1)]))
 
 app.objects.append(TrackerList())
 app.objects.append(TrackerList())
