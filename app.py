@@ -24,8 +24,8 @@ keys = []
 
 #Dictionary of collisions between geoms logged this step
 #Each key is the id of an ODE geom
-#Value is an array of ids of ODE geoms that the key geom collided with
-#The collision is added both ways, so that if A and B collide, A is in B's list, and B is in A's list too
+#Value is an array of ODE geoms (the geoms themselves, not ids) that the key geom collided with
+#The collision is added both ways, so that if A and B collide, B is in A's list, and A is in B's list too
 collisions = {}
 
 winsize = Size(1024, 768) #Size of the display window in pixels; TODO: should be a user setting

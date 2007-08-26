@@ -44,18 +44,18 @@ class Props:
 	def handle_collision(self, geom1, geom2, cjointgroup):
 		"""Checks for a real collision between geom1 (which should be the geom that has this Props as a
 		.coll_props data attribute) and some other geom, also with a valid .coll_props. If there is a
-		collision, appropriate action is taken (callbacks, contact joints, etc).
+		collision, then entries are made in app.collisions. Furthermore, if both objects have intersec_push
+		enabled in their coll_props, then contact joints are created to push the objects apart.
 		
 		For any given collision, this is only called once, so this method needs to handle
 		both this object's reaction as well as the other's.
 		
 		Newly created contact joints are placed into cjointgroup."""
 
-		#FIXME: Collision priority stuff doesn't work very well when higher priority object pushes
 		contacts = ode.collide(geom1, geom2)
 		
 		if len(contacts) > 0:
-			for (a,b) in ((id(geom1), id(geom2)), (id(geom2), id(geom1))):
+			for (a,b) in ((id(geom1), geom2), (id(geom2), geom1)):
 				if not app.collisions.has_key(a):
 					app.collisions[a] = [b]
 				else:
@@ -67,6 +67,7 @@ class Props:
 				c.setBounce(0.5)
 				c.setMu(5000)
 				cjoint = ode.ContactJoint(app.odeworld, cjointgroup, c)
+				#FIXME: Collision priority stuff doesn't work very well when higher priority object pushes
 				if (self.intersec_pri == geom2.coll_props.intersec_pri):
 					#Push both objects away from each other
 					cjoint = ode.ContactJoint(app.odeworld, cjointgroup, c)

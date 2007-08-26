@@ -27,17 +27,25 @@ class GameObj(object):
 		The old body is also automatically unassociated and destroyed.
 		Additionally, pos and ang are automatically loaded from body
 		after it is set, and geom's ang and pos are overwritten.
+		Also, the body will be given a "gameobj" attribute so you can
+		get back to a GameObj from its body.
 	geom -- The ODE geometry used for collision detection.
 		This can be None if you don't want an object to ever collide.
 		Setting geom will cause it to be ssociated with
 		body, if there is one set. The old geom is also automatically
 		unassociated and destroyed. Additionally, pos and ang
 		are automatically loaded from geom after it is set, and body's
-		ang and pos are overwritten.
+		ang and pos are overwritten. Also, the geom will be given
+		a "gameobj" attribute so you can get back to a GameObj from
+		its geom.
 	drives -- A util.TrackerList of drives. Each simstep, each drive's step method
 		is called in order. Each frame, every object's predraw method
 		is called, then after that's done, every object's draw method
 		is called.
+	props -- A set of lowercase strings describing various properties of the GameObj.
+		The meaning of particular strings depends upon drives; for example,
+		a GameObj might have a "smelly" property if it can be detected by
+		creatures with big noses.
 	
 	"""
 	
@@ -60,6 +68,8 @@ class GameObj(object):
 		elif isinstance(drives, util.TrackerList): self.drives = drives
 		else: self.drives = util.TrackerList(drives)
 
+		self.props = set()
+
 	def __str__(self):
 		return " GO: (%7.3f, %7.3f) %s [%s]" % (
 			self.pos.x,
@@ -79,6 +89,7 @@ class GameObj(object):
 		#Set the new geom, load its ang and pos, and associate it if possible
 		self._geom = geom
 		if self._geom != None:
+			self._geom.gameobj = self
 			self._fetch_ode_from(self._geom)
 			if self._body != None:
 				self._set_ode_pos(self._body)
@@ -91,11 +102,13 @@ class GameObj(object):
 		#Remove and disassociate existing body if any
 		if self._geom != None:
 			self._geom.setBody(None)
-		#if self._body != None:
+		
+		#FIXME: Figure out a way to actually delete bodies from the world
 		
 		#Set the new body, load its ang and pos, and associate it if possible
 		self._body = body
 		if self._body != None:
+			self._body.gameobl = self
 			self._fetch_ode_from(self._body)
 			if self._geom != None:
 				self._set_ode_pos(self._geom)
