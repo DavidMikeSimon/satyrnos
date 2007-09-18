@@ -49,7 +49,7 @@ def anchored_joint(joint_type, obj1, anchor = None, obj2 = None):
 	"""
 	if anchor == None: anchor = Point(0, 0)
 	joint = joint_type(app.odeworld)
-	if (obj2 != None):
+	if obj2 != None:
 		joint.attach(obj1.body, obj2.body)
 	else:
 		joint.attach(obj1.body, ode.environment)
@@ -81,7 +81,7 @@ class TrackerList(list):
 	
 	def _decrid(self, i, n = 1):
 		#Decrease the idcount for the given id by n
-		if (self._idcounts[i] > n):
+		if self._idcounts[i] > n:
 			self._idcounts[i] -= n
 		else:
 			del self._idcounts[i]
@@ -131,7 +131,7 @@ class TrackerList(list):
 	
 	def __iadd__(self, y):
 		list.__iadd__(self, y)
-		if (isinstance(y, TrackerList)):
+		if isinstance(y, TrackerList):
 			for k in y._idcounts.keys():
 				self._incrid(k, y._idcounts[k])
 		else:
@@ -178,11 +178,11 @@ class TrackerList(list):
 	def __init__(self, seq = None):
 		"""Creates a new TrackerList. If seq is provided, creates a new TrackerList with seq's items."""
 		self._idcounts = {} #Key is some id, value is # of list elements in self with a value having that id
-		if (seq == None):
+		if seq == None:
 			list.__init__(self)
 		else:
 			list.__init__(self, seq)
-			if (isinstance(seq, TrackerList)):
+			if isinstance(seq, TrackerList):
 				self._idcounts = seq._idcounts.copy()
 			else:
 				for v in seq:
@@ -200,7 +200,7 @@ class TrackerList(list):
 	
 	def extend(self, iterable):
 		list.extend(self, iterable)
-		if (isinstance(iterable, TrackerList)):
+		if isinstance(iterable, TrackerList):
 			for k in iterable._idcounts.keys():
 				self._incrid(k, iterable._idcounts[k])
 		else:
@@ -251,7 +251,7 @@ class LayeredList(list):
 		def next(self):
 			if self.subiter == None:
 				self.pos += 1
-				if (self.pos < len(self.tgtlist)):
+				if self.pos < len(self.tgtlist):
 					self.subiter = iter(self.tgtlist[self.pos])
 					return self.next()
 				else:

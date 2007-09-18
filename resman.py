@@ -21,7 +21,7 @@ class Texture(object):
 	def __new__(cls, filename):
 		"""Creates a Texture from an image file, using pre-cached version if it exists."""
 		
-		if (Texture.cache.has_key(filename)):
+		if Texture.cache.has_key(filename):
 			return Texture.cache[filename]
 		else:
 			obj = object.__new__(cls)
@@ -43,6 +43,6 @@ def unload_all():
 	"""Unloads all resources.
 	
 	Invalidates all instances of any of the classes in this module."""
-	if (len(Texture.cache) > 0):
+	if len(Texture.cache) > 0:
 		glDeleteTextures([ x.glname for x in Texture.cache.values() ])
 		Texture.cache = {}

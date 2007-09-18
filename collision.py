@@ -96,11 +96,11 @@ class Props:
 				c.setMu(5000)
 				cjoint = ode.ContactJoint(app.odeworld, cjointgroup, c)
 				#FIXME: Collision priority stuff doesn't work very well when higher priority object pushes
-				if (self.intersec_pri == geom2.coll_props.intersec_pri):
+				if self.intersec_pri == geom2.coll_props.intersec_pri:
 					#Push both objects away from each other
 					cjoint = ode.ContactJoint(app.odeworld, cjointgroup, c)
 					cjoint.attach(geom1.getBody(), geom2.getBody())
-				elif (self.intersec_pri > geom2.coll_props.intersec_pri):
+				elif self.intersec_pri > geom2.coll_props.intersec_pri:
 					#Push the other object, but not this one
 					cjoint = ode.ContactJoint(app.odeworld, cjointgroup, c)
 					cjoint.attach(None, geom2.getBody())

@@ -188,7 +188,7 @@ def _draw_frame():
 	glPopMatrix()
 	
 	for w in watchers:
-		if (w.expr != None):
+		if w.expr != None:
 			w.update()
 			w.draw()
 	

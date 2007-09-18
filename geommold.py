@@ -102,7 +102,7 @@ class CircleGeomMold(GeomMold):
 		self.radius = radius
 	
 	def make_geom(self, size, space = None, coll_props = -1):
-		if (space == None): space = app.dyn_space
+		if space == None: space = app.dyn_space
 		
 		rad = self.radius*((size[0]+size[1])/2.0)
 		geom = ode.GeomSphere(space, rad)
@@ -110,7 +110,7 @@ class CircleGeomMold(GeomMold):
 		geom.draw_drives = [image.DCircle(rad)]
 		geom.geom_args = (size, space, coll_props)
 		
-		if (coll_props == -1): geom.coll_props = collision.Props()
+		if coll_props == -1: geom.coll_props = collision.Props()
 		else: geom.coll_props = coll_props
 		
 		return geom
@@ -123,13 +123,13 @@ class BoxGeomMold(GeomMold):
 		pass
 	
 	def make_geom(self, size, space = None, coll_props = -1):
-		if (space == None): space = app.dyn_space
+		if space == None: space = app.dyn_space
 		geom = ode.GeomBox(space, (size[0], size[1], 1))
 		geom.mold = self
 		geom.draw_drives = [image.DWireBlock(size = size)]
 		geom.geom_args = (size, space, coll_props)
 		
-		if (coll_props == -1): geom.coll_props = collision.Props()
+		if coll_props == -1: geom.coll_props = collision.Props()
 		else: geom.coll_props = coll_props
 		
 		return geom
@@ -316,7 +316,7 @@ class ComplexGeomMold(GeomMold):
 		self.outer_paths = cache["outer"]
 	
 	def make_geom(self, size, space = None, coll_props = -1, outer = 1, inner = 0):
-		if (space == None): space = app.dyn_space
+		if space == None: space = app.dyn_space
 		
 		meshverts = []
 		meshtris = []
@@ -355,7 +355,7 @@ class ComplexGeomMold(GeomMold):
 		geom.draw_drives = draw_drives
 		geom.geom_args = (size, space, coll_props, outer, inner)
 		
-		if (coll_props == -1): geom.coll_props = collision.Props()
+		if coll_props == -1: geom.coll_props = collision.Props()
 		else: geom.coll_props = coll_props
 		
 		return geom

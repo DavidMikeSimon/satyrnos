@@ -30,7 +30,7 @@ class Drive(object):
 		
 		This will be called by app in a state where GL is ready and
 		GL units are meters."""
-		if (self.drawing):
+		if self.drawing:
 			need_pop = False
 			
 			if abs(self.rot_offset) > 0.00001:
@@ -57,7 +57,7 @@ class Drive(object):
 		
 		This will be called by app in a state where GL is ready and
 		GL units are meters."""
-		if (self.drawing):
+		if self.drawing:
 			self._predraw(obj)
 	
 	def _predraw(self, obj):
@@ -65,7 +65,7 @@ class Drive(object):
 	
 	def step(self, obj):
 		"""Performs any simulation-related stuff (for changing game state)."""
-		if (self.stepping):
+		if self.stepping:
 			self._step(obj)
 	
 	def _step(self, obj):
@@ -94,11 +94,11 @@ class DDebug(Drive):
 		self.predraw_expr = None
 		self.step_expr = None
 		
-		if (draw_expr != None):
+		if draw_expr != None:
 			self.draw_expr = compile(draw_expr, "draw_expr", "single")
-		if (predraw_expr != None):
+		if predraw_expr != None:
 			self.predraw_expr = compile(predraw_expr, "predraw_expr", "single")
-		if (step_expr != None):
+		if step_expr != None:
 			self.step_expr = compile(step_expr, "step_expr", "single")
 	
 	def _attempt(self, obj, expr):

@@ -308,8 +308,8 @@ class Rect:
 		#Rotate the point in the opposite direction around box center, check against unrotated box
 		realp = p.rot(self.cen, -self.ang);
 		for axis in range(0, 2):
-			if (realp[axis] > self.cen[axis] + self.size[axis]/2): return False
-			if (realp[axis] < self.cen[axis] - self.size[axis]/2): return False
+			if realp[axis] > self.cen[axis] + self.size[axis]/2: return False
+			if realp[axis] < self.cen[axis] - self.size[axis]/2: return False
 		return True
 	
 	def nearest_pt_to(self, p):

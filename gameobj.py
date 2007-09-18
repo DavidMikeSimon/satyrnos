@@ -220,7 +220,7 @@ class GameObj(object):
 			draw_geoms = app.draw_geoms
 		glPushMatrix()
 		glTranslatef(self.pos[0], self.pos[1], 0)
-		if (self.ang > 0.00001):
+		if self.ang > 0.00001:
 			glRotatef(util.rev2deg(self.ang), 0, 0, 1)
 		for d in self.drives:
 			d.draw(self)
@@ -231,7 +231,7 @@ class GameObj(object):
 	
 	def freeze(self):
 		"""Kills the object's linear and angular velocity."""
-		if (self._body == None):
+		if self._body == None:
 			return
 		
 		self._body.setLinearVel((0, 0, 0))

@@ -148,7 +148,7 @@ class OutputBox:
 		
 		#Cut off the last line if it's empty (which it almost always will be)
 		buflen = len(self.buffer)
-		if (self.buffer[-1] == "" and self.scroll == 0):
+		if self.buffer[-1] == "" and self.scroll == 0:
 			buflen -= 1
 		
 		#Figure out how many lines of text we can fit, and how many we actually will draw
@@ -201,7 +201,7 @@ class OutputBox:
 	def jump_top(self):
 		"""Scrolls to the top of the OutputBox."""
 		#Don't bother unless there's more than one screenful of information
-		if (self.dispsize() >= len(self.buffer)):
+		if self.dispsize() >= len(self.buffer):
 			return
 		self.scroll = len(self.buffer)-self.dispsize()
 	
@@ -212,7 +212,7 @@ class OutputBox:
 	def scroll_up(self):
 		"""Scrolls up one screenful."""
 		#Don't bother unless there's more than one screenful of information
-		if (self.dispsize() >= len(self.buffer)):
+		if self.dispsize() >= len(self.buffer):
 			return
 		self.scroll = min(self.scroll+self.dispsize(), len(self.buffer)-self.dispsize())
 	

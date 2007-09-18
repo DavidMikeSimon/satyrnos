@@ -87,12 +87,12 @@ class DTiledImage(drive.Drive):
 		
 		#0x812F is GL_CLAMP_TO_EDGE, which seems to be missing from PyOpenGL
 		
-		if (self.clamp[0]):
+		if self.clamp[0]:
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, 0x812F)
 		else:
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
 		
-		if (self.clamp[1]):
+		if self.clamp[1]:
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, 0x812F)
 		else:
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
@@ -201,7 +201,7 @@ class DCircle(drive.Drive):
 	def _draw(self, obj):
 		glColor3fv(self.color)
 		
-		if (self.filled):
+		if self.filled:
 			glBegin(GL_POLYGON)
 		else:
 			glBegin(GL_LINE_LOOP)
@@ -236,7 +236,7 @@ class DPoly(drive.Drive):
 	def _draw(self, obj):
 		glColor3fv(self.color)
 		
-		if (self.filled):
+		if self.filled:
 			glBegin(GL_POLYGON)
 		else:
 			glBegin(GL_LINE_LOOP)
